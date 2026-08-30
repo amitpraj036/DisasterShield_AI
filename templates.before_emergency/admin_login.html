@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DisasterShield AI - Admin Login</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+            color: #172033;
+            padding: 20px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            padding: 32px;
+            border-radius: 18px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 42px;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #667085;
+            margin: 8px 0 28px;
+        }
+
+        label {
+            display: block;
+            margin: 14px 0 7px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #d0d5dd;
+            border-radius: 9px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 14px;
+            border: 0;
+            border-radius: 9px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #message {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .error {
+            display: block !important;
+            background: #fee4e2;
+            color: #b42318;
+        }
+
+        .success {
+            display: block !important;
+            background: #dcfae6;
+            color: #067647;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-card">
+
+    <div class="logo">🛡️</div>
+
+    <h1>DisasterShield AI</h1>
+
+    <p class="subtitle">
+        Administrator Login
+    </p>
+
+    <form id="loginForm">
+
+        <label for="email">
+            Email
+        </label>
+
+        <input
+            id="email"
+            type="email"
+            placeholder="Admin email"
+            autocomplete="username"
+            required
+        >
+
+        <label for="password">
+            Password
+        </label>
+
+        <input
+            id="password"
+            type="password"
+            placeholder="Admin password"
+            autocomplete="current-password"
+            required
+        >
+
+        <button id="loginButton" type="submit">
+            Login to Dashboard
+        </button>
+
+    </form>
+
+    <div id="message"></div>
+
+</div>
+
+
+<script>
+const form = document.getElementById("loginForm");
+const button = document.getElementById("loginButton");
+const message = document.getElementById("message");
+
+form.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    message.className = "";
+    message.textContent = "";
+
+    button.disabled = true;
+    button.textContent = "Logging in...";
+
+    try {
+
+        const response = await fetch("/api/auth/login", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email: document.getElementById("email").value.trim(),
+                password: document.getElementById("password").value
+            })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(
+                result.message || "Login failed"
+            );
+        }
+
+        if (!result.user || result.user.role !== "admin") {
+            await fetch("/api/auth/logout", {
+                method: "POST",
+                credentials: "same-origin"
+            });
+
+            throw new Error(
+                "This account does not have administrator access."
+            );
+        }
+
+        message.className = "success";
+        message.textContent = "Login successful. Opening dashboard...";
+
+        window.location.href = "/admin";
+
+    } catch (error) {
+
+        message.className = "error";
+        message.textContent = error.message;
+
+        button.disabled = false;
+        button.textContent = "Login to Dashboard";
+    }
+});
+</script>
+
+</body>
+</html>

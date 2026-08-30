@@ -1,0 +1,1778 @@
+let map = null;
+
+let riskLayer = null;
+let reportLayer = null;
+let alertLayer = null;
+let userLayer = null;
+
+let allAlerts = [];
+
+let userLocation = null;
+
+let alertMarkers = [];
+
+let autoRefreshTimer = null;
+
+
+/* =========================
+   INITIALIZE MAP
+   ========================= */
+
+function initMap() {
+
+    map = L.map("map").setView(
+        [26.9124, 75.7873],
+        10
+    );
+
+    // =========================
+    // BASE MAPS
+    // =========================
+
+    const streetLayer = L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+            attribution:
+                "&copy; OpenStreetMap contributors"
+        }
+    );
+
+    const satelliteLayer = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+            maxZoom: 19,
+            attribution:
+                "Tiles &copy; Esri"
+        }
+    );
+
+    // Street map is default
+    streetLayer.addTo(map);
+
+    // =========================
+    // DISASTER LAYERS
+    // =========================
+
+    riskLayer =
+        L.layerGroup().addTo(map);
+
+    reportLayer =
+        L.layerGroup().addTo(map);
+
+    alertLayer =
+        L.layerGroup().addTo(map);
+
+    userLayer =
+        L.layerGroup().addTo(map);
+
+    // =========================
+    // MAP LAYER CONTROL
+    // =========================
+
+    L.control.layers(
+        {
+            "🗺️ Street Map": streetLayer,
+            "🛰️ Satellite": satelliteLayer
+        },
+        {
+            "📡 Risk Data": riskLayer,
+            "📍 Verified Reports": reportLayer,
+            "🚨 Emergency Alerts": alertLayer,
+            "👤 My Location": userLayer
+        },
+        {
+            collapsed: false,
+            position: "topright"
+        }
+    ).addTo(map);
+}
+
+/* =========================
+   HTML ESCAPE
+   ========================= */
+
+function escapeHtml(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+/* =========================
+   POPUP
+   ========================= */
+
+function createPopup(title, data) {
+
+    let html = `
+        <div class="popup-box">
+
+            <h3>
+                ${escapeHtml(title)}
+            </h3>
+    `;
+
+
+    for (
+        const [key, value]
+        of Object.entries(data)
+    ) {
+
+        if (
+            value !== null &&
+            value !== undefined &&
+            value !== ""
+        ) {
+
+            html += `
+                <div class="popup-row">
+
+                    <span>
+                        ${escapeHtml(key)}
+                    </span>
+
+                    <strong>
+                        ${escapeHtml(value)}
+                    </strong>
+
+                </div>
+            `;
+        }
+    }
+
+
+    html += `
+        </div>
+    `;
+
+
+    return html;
+}
+
+
+/* =========================
+   LOAD GIS DATA
+   ========================= */
+
+async function loadMapData() {
+
+    const loading =
+        document.getElementById(
+            "mapLoading"
+        );
+
+    const status =
+        document.getElementById(
+            "mapStatus"
+        );
+
+    const refreshBtn =
+        document.getElementById(
+            "refreshBtn"
+        );
+
+
+    if (loading) {
+        loading.classList.remove("hidden");
+    }
+
+
+    if (refreshBtn) {
+        refreshBtn.disabled = true;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/gis/map-data",
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+        }
+
+
+        const result =
+            await response.json();
+
+
+        if (!result.success) {
+
+            throw new Error(
+                result.message ||
+                "GIS API failed"
+            );
+        }
+
+
+        const risks =
+            result.risk_data || [];
+
+        const reports =
+            result.verified_reports || [];
+
+        const alerts =
+            result.active_alerts || [];
+
+
+        allAlerts = alerts;
+
+
+        /* =========================
+           COUNTERS
+           ========================= */
+
+        setText(
+            "riskCount",
+            risks.length
+        );
+
+        setText(
+            "reportCount",
+            reports.length
+        );
+
+        setText(
+            "alertCount",
+            alerts.length
+        );
+
+
+        /* =========================
+           CLEAR OLD LAYERS
+           ========================= */
+
+        riskLayer.clearLayers();
+        reportLayer.clearLayers();
+        alertLayer.clearLayers();
+
+
+        alertMarkers = [];
+
+
+        const mapPoints = [];
+
+
+        /* =========================
+           RISK DATA
+           ========================= */
+
+        risks.forEach(record => {
+
+            if (
+                !validCoordinates(
+                    record.latitude,
+                    record.longitude
+                )
+            ) {
+                return;
+            }
+
+
+            const riskColor =
+                getRiskColor(
+                    record.risk_level
+                );
+
+
+            const marker =
+                L.circleMarker(
+                    [
+                        record.latitude,
+                        record.longitude
+                    ],
+                    {
+                        radius:
+                            getRiskRadius(
+                                record.risk_level
+                            ),
+
+                        color:
+                            riskColor,
+
+                        weight: 3,
+
+                        fillColor:
+                            riskColor,
+
+                        fillOpacity: .72
+                    }
+                );
+
+
+            marker.bindPopup(
+                createPopup(
+                    "📡 Risk Observation",
+                    {
+                        "Risk ID":
+                            record.id,
+
+                        "Risk Level":
+                            record.risk_level ||
+                            "Not calculated",
+
+                        "Risk Score":
+                            record.risk_score ??
+                            "N/A",
+
+                        "Rainfall":
+                            `${record.rainfall_mm ?? "N/A"} mm`,
+
+                        "Soil Moisture":
+                            record.soil_moisture ??
+                            "N/A",
+
+                        "Slope":
+                            `${record.slope_degree ?? "N/A"}°`,
+
+                        "Elevation":
+                            `${record.elevation ?? "N/A"} m`,
+
+                        "Historical Landslides":
+                            record.historical_landslides ??
+                            "N/A",
+
+                        "Source":
+                            record.source ||
+                            "Unknown"
+                    }
+                )
+            );
+
+
+            marker.addTo(
+                riskLayer
+            );
+
+
+            mapPoints.push([
+                record.latitude,
+                record.longitude
+            ]);
+        });
+
+
+        /* =========================
+           VERIFIED REPORTS
+           ========================= */
+
+        reports.forEach(report => {
+
+            if (
+                !validCoordinates(
+                    report.latitude,
+                    report.longitude
+                )
+            ) {
+                return;
+            }
+
+
+            const marker =
+                L.marker(
+                    [
+                        report.latitude,
+                        report.longitude
+                    ],
+                    {
+                        icon:
+                            getDisasterIcon(
+                                report.disaster_type
+                            ),
+
+                        zIndexOffset: 1000
+                    }
+                );
+
+
+            marker.bindPopup(
+                createPopup(
+                    "📍 Verified Disaster",
+                    {
+                        "Report ID":
+                            report.id,
+
+                        "Type":
+                            report.disaster_type,
+
+                        "Severity":
+                            report.severity,
+
+                        "Status":
+                            report.status,
+
+                        "Description":
+                            report.description,
+
+                        "Reported At":
+                            formatDate(
+                                report.created_at
+                            )
+                    }
+                )
+            );
+
+
+            marker.addTo(
+                reportLayer
+            );
+
+
+            mapPoints.push([
+                report.latitude,
+                report.longitude
+            ]);
+        });
+
+
+        /* =========================
+           ACTIVE ALERTS
+           ========================= */
+
+        alerts.forEach(alert => {
+
+            if (
+                !validCoordinates(
+                    alert.latitude,
+                    alert.longitude
+                )
+            ) {
+                return;
+            }
+
+
+            const radius =
+                (
+                    Number(
+                        alert.radius_km
+                    ) || 1
+                ) * 1000;
+
+
+            /* ALERT ZONE */
+
+            const circle =
+                L.circle(
+                    [
+                        alert.latitude,
+                        alert.longitude
+                    ],
+                    {
+                        radius:
+
+                            radius,
+
+                        color:
+                            getAlertColor(
+                                alert.severity
+                            ),
+
+                        weight: 3,
+
+                        fillColor:
+                            getAlertColor(
+                                alert.severity
+                            ),
+
+                        fillOpacity: .13
+                    }
+                );
+
+
+            circle.bindPopup(
+                createPopup(
+                    "🚨 Emergency Alert",
+                    {
+                        "Title":
+                            alert.title,
+
+                        "Type":
+                            alert.alert_type,
+
+                        "Severity":
+                            alert.severity,
+
+                        "Message":
+                            alert.message,
+
+                        "Alert Radius":
+                            `${alert.radius_km || 1} km`,
+
+                        "Source":
+                            alert.source ||
+                            "Unknown",
+
+                        "Created":
+                            formatDate(
+                                alert.created_at
+                            )
+                    }
+                )
+            );
+
+
+            circle.addTo(
+                alertLayer
+            );
+
+
+            /* ALERT CENTER */
+
+            const center =
+                L.marker(
+                    [
+                        alert.latitude,
+                        alert.longitude
+                    ],
+                    {
+                        icon:
+                            getAlertIcon(
+                                alert.severity
+                            ),
+
+                        zIndexOffset:
+                            1500
+                    }
+                );
+
+
+            center.bindPopup(
+                createPopup(
+                    "🚨 Active Emergency",
+                    {
+                        "Title":
+                            alert.title,
+
+                        "Severity":
+                            alert.severity,
+
+                        "Radius":
+                            `${alert.radius_km || 1} km`,
+
+                        "Message":
+                            alert.message
+                    }
+                )
+            );
+
+
+            center.addTo(
+                alertLayer
+            );
+
+
+            alertMarkers.push({
+                alert:
+                    alert,
+
+                marker:
+                    center
+            });
+
+
+            mapPoints.push([
+                alert.latitude,
+                alert.longitude
+            ]);
+        });
+
+
+        /* =========================
+           AUTO FIT
+           ========================= */
+
+        if (
+            mapPoints.length > 0 &&
+            !userLocation
+        ) {
+
+            const bounds =
+                L.latLngBounds(
+                    mapPoints
+                );
+
+
+            map.fitBounds(
+                bounds,
+                {
+                    padding:
+                        [35, 35],
+
+                    maxZoom: 13
+                }
+            );
+        }
+
+
+        /* =========================
+           UI UPDATE
+           ========================= */
+
+        updateRiskBanner();
+
+        updateNearbyAlerts();
+
+        const loading =
+            document.getElementById("mapLoading");
+
+        const refreshBtn =
+            document.getElementById("refreshBtn");
+
+        if (loading) {
+            loading.style.display = "none";
+        }
+
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = "🔄 Refresh";
+        }
+
+        setText(
+            "mapStatus",
+            `${risks.length} risk observations • ${reports.length} verified reports • ${alerts.length} active alerts`
+        );
+
+
+        setText(
+            "lastUpdated",
+            `Last updated: ${new Date().toLocaleTimeString()}`
+        );
+
+
+        if (loading) {
+            loading.classList.add("hidden");
+        }
+
+    } catch (error) {
+
+        console.error(
+            "GIS loading error:",
+            error
+        );
+
+        const loading =
+            document.getElementById("mapLoading");
+
+        const refreshBtn =
+            document.getElementById("refreshBtn");
+
+        if (loading) {
+            loading.style.display = "none";
+        }
+
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = "🔄 Refresh";
+        }
+
+
+        setText(
+            "mapStatus",
+            "Unable to connect to live GIS data"
+        );
+
+
+        setText(
+            "riskBannerTitle",
+            "GIS DATA ERROR"
+        );
+
+
+        setText(
+            "riskBannerText",
+            "Unable to load live disaster information."
+        );
+
+
+        const badge =
+            document.getElementById(
+                "riskBadge"
+            );
+
+        if (badge) {
+            badge.textContent =
+                "OFFLINE";
+        }
+
+
+        const banner =
+            document.getElementById(
+                "riskBanner"
+            );
+
+        if (banner) {
+            banner.className =
+                "risk-banner danger";
+        }
+
+
+        if (loading) {
+            loading.classList.add("hidden");
+        }
+
+    } finally {
+
+        if (refreshBtn) {
+            refreshBtn.disabled = false;
+        }
+    }
+}
+
+
+/* =========================
+   RISK COLOR
+   ========================= */
+
+function getRiskColor(level) {
+
+    switch (
+        String(level || "")
+            .toLowerCase()
+    ) {
+
+        case "critical":
+            return "#dc2626";
+
+        case "high":
+            return "#f97316";
+
+        case "moderate":
+            return "#eab308";
+
+        case "low":
+            return "#22c55e";
+
+        default:
+            return "#2563eb";
+    }
+}
+
+
+function getRiskRadius(level) {
+
+    switch (
+        String(level || "")
+            .toLowerCase()
+    ) {
+
+        case "critical":
+            return 12;
+
+        case "high":
+            return 10;
+
+        case "moderate":
+            return 9;
+
+        default:
+            return 8;
+    }
+}
+
+
+function getAlertColor(severity) {
+
+    switch (
+        String(severity || "")
+            .toLowerCase()
+    ) {
+
+        case "critical":
+            return "#b91c1c";
+
+        case "high":
+            return "#dc2626";
+
+        case "moderate":
+            return "#ea580c";
+
+        default:
+            return "#2563eb";
+    }
+}
+
+
+/* =========================
+   DISASTER ICON
+   ========================= */
+
+function getDisasterIcon(type) {
+
+    const icons = {
+
+        flood: "🌊",
+
+        landslide: "⛰️",
+
+        earthquake: "🌍",
+
+        fire: "🔥",
+
+        cyclone: "🌀",
+
+        storm: "⛈️",
+
+        drought: "☀️",
+
+        other: "⚠️"
+    };
+
+
+    const emoji =
+        icons[
+            String(type || "")
+                .toLowerCase()
+        ] || "⚠️";
+
+
+    return L.divIcon({
+
+        className:
+            "disaster-marker",
+
+        html: `
+            <div class="disaster-marker-inner">
+                ${emoji}
+            </div>
+        `,
+
+        iconSize:
+            [36, 36],
+
+        iconAnchor:
+            [18, 18],
+
+        popupAnchor:
+            [0, -18]
+    });
+}
+
+
+/* =========================
+   ALERT ICON
+   ========================= */
+
+function getAlertIcon(severity) {
+
+    const icon =
+        String(severity || "")
+            .toLowerCase() ===
+            "critical"
+            ? "⚠️"
+            : "🚨";
+
+
+    return L.divIcon({
+
+        className:
+            "alert-marker",
+
+        html: `
+            <div class="alert-marker-inner">
+                ${icon}
+            </div>
+        `,
+
+        iconSize:
+            [31, 31],
+
+        iconAnchor:
+            [15.5, 15.5],
+
+        popupAnchor:
+            [0, -16]
+    });
+}
+
+
+/* =========================
+   RISK BANNER
+   ========================= */
+
+function updateRiskBanner() {
+
+    const banner =
+        document.getElementById(
+            "riskBanner"
+        );
+
+    const icon =
+        document.getElementById(
+            "riskBannerIcon"
+        );
+
+    const title =
+        document.getElementById(
+            "riskBannerTitle"
+        );
+
+    const text =
+        document.getElementById(
+            "riskBannerText"
+        );
+
+    const badge =
+        document.getElementById(
+            "riskBadge"
+        );
+
+
+    if (!banner) {
+        return;
+    }
+
+
+    const critical =
+        allAlerts.filter(
+            alert =>
+                String(
+                    alert.severity || ""
+                ).toLowerCase() ===
+                "critical"
+        ).length;
+
+
+    const high =
+        allAlerts.filter(
+            alert =>
+                String(
+                    alert.severity || ""
+                ).toLowerCase() ===
+                "high"
+        ).length;
+
+
+    const moderate =
+        allAlerts.filter(
+            alert =>
+                String(
+                    alert.severity || ""
+                ).toLowerCase() ===
+                "moderate"
+        ).length;
+
+
+    banner.className =
+        "risk-banner";
+
+
+    if (critical > 0) {
+
+        banner.classList.add(
+            "critical"
+        );
+
+        icon.textContent =
+            "🔴";
+
+        title.textContent =
+            "CRITICAL DISASTER RISK";
+
+        text.textContent =
+            `${critical} critical emergency alert${critical > 1 ? "s" : ""} active. Avoid affected areas.`;
+
+        badge.textContent =
+            "CRITICAL";
+
+    }
+
+    else if (high > 0) {
+
+        banner.classList.add(
+            "high"
+        );
+
+        icon.textContent =
+            "🟠";
+
+        title.textContent =
+            "HIGH DISASTER RISK";
+
+        text.textContent =
+            `${high} high-severity alert${high > 1 ? "s" : ""} currently active.`;
+
+        badge.textContent =
+            "HIGH RISK";
+
+    }
+
+    else if (moderate > 0) {
+
+        banner.classList.add(
+            "moderate"
+        );
+
+        icon.textContent =
+            "🟡";
+
+        title.textContent =
+            "DISASTER RISK WARNING";
+
+        text.textContent =
+            `${moderate} moderate alert${moderate > 1 ? "s" : ""} currently active.`;
+
+        badge.textContent =
+            "CAUTION";
+
+    }
+
+    else if (allAlerts.length > 0) {
+
+        banner.classList.add(
+            "moderate"
+        );
+
+        icon.textContent =
+            "🟡";
+
+        title.textContent =
+            "ACTIVE DISASTER ALERTS";
+
+        text.textContent =
+            "Please review active alerts and follow local instructions.";
+
+        badge.textContent =
+            "CAUTION";
+
+    }
+
+    else {
+
+        banner.classList.add(
+            "safe"
+        );
+
+        icon.textContent =
+            "🟢";
+
+        title.textContent =
+            "NO ACTIVE EMERGENCY";
+
+        text.textContent =
+            "No active disaster alerts detected in the live database.";
+
+        badge.textContent =
+            "ALL CLEAR";
+    }
+}
+
+
+/* =========================
+   GEOLOCATION
+   ========================= */
+
+function locateUser() {
+
+    if (
+        !navigator.geolocation
+    ) {
+
+        showLocationError(
+            "Geolocation is not supported by this browser."
+        );
+
+        return;
+    }
+
+
+    const button =
+        document.getElementById(
+            "locateBtn"
+        );
+
+
+    button.disabled = true;
+
+    button.textContent =
+        "📍 Locating...";
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+            userLocation = {
+
+                latitude:
+                    position.coords.latitude,
+
+                longitude:
+                    position.coords.longitude,
+
+                accuracy:
+                    position.coords.accuracy
+            };
+
+
+            userLayer.clearLayers();
+
+
+            const marker =
+                L.marker(
+                    [
+                        userLocation.latitude,
+                        userLocation.longitude
+                    ],
+                    {
+                        icon:
+                            L.divIcon({
+
+                                className:
+                                    "user-location-icon",
+
+                                html:
+                                    `<div class="user-marker"></div>`,
+
+                                iconSize:
+                                    [18, 18],
+
+                                iconAnchor:
+                                    [9, 9]
+                            }),
+
+                        zIndexOffset:
+                            2000
+                    }
+                );
+
+
+            marker.bindPopup(
+                `
+                    <strong>
+                        📍 Your Current Location
+                    </strong>
+                    <br><br>
+                    Accuracy:
+                    ${Math.round(userLocation.accuracy)} meters
+                `
+            );
+
+
+            marker.addTo(
+                userLayer
+            );
+
+
+            const accuracyCircle =
+                L.circle(
+                    [
+                        userLocation.latitude,
+                        userLocation.longitude
+                    ],
+                    {
+                        radius:
+                            userLocation.accuracy,
+
+                        color:
+                            "#16a34a",
+
+                        weight: 1,
+
+                        fillColor:
+                            "#22c55e",
+
+                        fillOpacity: .08
+                    }
+                );
+
+
+            accuracyCircle.addTo(
+                userLayer
+            );
+
+
+            map.setView(
+                [
+                    userLocation.latitude,
+                    userLocation.longitude
+                ],
+                13,
+                {
+                    animate: true
+                }
+            );
+
+
+            setText(
+                "locationStatus",
+                `📍 Location detected • ±${Math.round(userLocation.accuracy)} m`
+            );
+
+
+            updateNearbyAlerts();
+
+
+            button.disabled = false;
+
+            button.textContent =
+                "📍 My Location";
+        },
+
+
+        function(error) {
+
+            console.error(
+                "Location error:",
+                error
+            );
+
+
+            showLocationError(
+                "Unable to get your location. Please allow location permission."
+            );
+
+
+            button.disabled = false;
+
+            button.textContent =
+                "📍 My Location";
+        },
+
+        {
+            enableHighAccuracy:
+                true,
+
+            timeout:
+                10000,
+
+            maximumAge:
+                60000
+        }
+    );
+}
+
+
+/* =========================
+   LOCATION ERROR
+   ========================= */
+
+function showLocationError(message) {
+
+    setText(
+        "locationStatus",
+        "⚠️ Location unavailable"
+    );
+
+    alert(message);
+}
+
+
+/* =========================
+   NEARBY ALERTS
+   ========================= */
+
+function updateNearbyAlerts() {
+
+    const container =
+        document.getElementById(
+            "nearbyAlerts"
+        );
+
+    const countElement =
+        document.getElementById(
+            "nearbyCount"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    let alerts =
+        [...allAlerts];
+
+
+    if (userLocation) {
+
+        alerts =
+            alerts
+                .filter(
+                    alert =>
+                        validCoordinates(
+                            alert.latitude,
+                            alert.longitude
+                        )
+                )
+                .map(alert => {
+
+                    return {
+                        ...alert,
+
+                        distance:
+                            calculateDistance(
+                                userLocation.latitude,
+                                userLocation.longitude,
+                                alert.latitude,
+                                alert.longitude
+                            )
+                    };
+                })
+                .sort(
+                    (a, b) =>
+                        a.distance -
+                        b.distance
+                );
+
+    } else {
+
+        alerts =
+            alerts
+                .filter(
+                    alert =>
+                        validCoordinates(
+                            alert.latitude,
+                            alert.longitude
+                        )
+                )
+                .map(alert => ({
+                    ...alert,
+                    distance: null
+                }));
+    }
+
+
+    const nearby =
+        userLocation
+            ? alerts.filter(
+                alert =>
+                    alert.distance <=
+                    (
+                        Number(
+                            alert.radius_km
+                        ) || 5
+                    )
+            )
+            : alerts;
+
+
+    if (countElement) {
+
+        countElement.textContent =
+            userLocation
+                ? `${nearby.length} nearby`
+                : `${alerts.length} active`;
+    }
+
+
+    if (nearby.length === 0) {
+
+        container.innerHTML = `
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    🟢
+                </div>
+
+                <strong>
+                    No nearby emergency alerts
+                </strong>
+
+                <p>
+                    ${
+                        userLocation
+                        ? "No active alert zones were found near your current location."
+                        : "Tap My Location to check alerts near you."
+                    }
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    nearby
+        .slice(0, 10)
+        .forEach(
+            alert => {
+
+                const div =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                div.className =
+                    "nearby-alert";
+
+
+                const severity =
+                    String(
+                        alert.severity ||
+                        "moderate"
+                    ).toLowerCase();
+
+
+                const distanceText =
+                    alert.distance !== null
+                        ? `${alert.distance.toFixed(2)} km`
+                        : "Location required";
+
+
+                div.innerHTML = `
+
+                    <div class="nearby-alert-top">
+
+                        <div>
+
+                            <h3>
+                                🚨
+                                ${escapeHtml(
+                                    alert.title ||
+                                    "Emergency Alert"
+                                )}
+                            </h3>
+
+                            <span
+                                class="severity-badge ${escapeHtml(severity)}"
+                            >
+                                ${escapeHtml(
+                                    severity
+                                )}
+                            </span>
+
+                        </div>
+
+                        <span class="distance">
+                            📍 ${escapeHtml(
+                                distanceText
+                            )}
+                        </span>
+
+                    </div>
+
+                    <p>
+                        ${escapeHtml(
+                            alert.message ||
+                            "Emergency alert active."
+                        )}
+                    </p>
+                `;
+
+
+                div.addEventListener(
+                    "click",
+                    function() {
+
+                        focusAlert(
+                            alert
+                        );
+                    }
+                );
+
+
+                container.appendChild(
+                    div
+                );
+            }
+        );
+}
+
+
+/* =========================
+   FOCUS ALERT
+   ========================= */
+
+function focusAlert(alert) {
+
+    if (
+        !validCoordinates(
+            alert.latitude,
+            alert.longitude
+        )
+    ) {
+        return;
+    }
+
+
+    map.setView(
+        [
+            alert.latitude,
+            alert.longitude
+        ],
+        14,
+        {
+            animate: true
+        }
+    );
+
+
+    const found =
+        alertMarkers.find(
+            item =>
+                item.alert.id ===
+                alert.id
+        );
+
+
+    if (
+        found &&
+        found.marker
+    ) {
+
+        setTimeout(
+            function() {
+
+                found.marker.openPopup();
+
+            },
+            350
+        );
+    }
+}
+
+
+/* =========================
+   DISTANCE
+   ========================= */
+
+function calculateDistance(
+    lat1,
+    lon1,
+    lat2,
+    lon2
+) {
+
+    const R =
+        6371;
+
+
+    const dLat =
+        toRadians(
+            lat2 - lat1
+        );
+
+    const dLon =
+        toRadians(
+            lon2 - lon1
+        );
+
+
+    const a =
+        Math.sin(dLat / 2) *
+        Math.sin(dLat / 2) +
+
+        Math.cos(
+            toRadians(lat1)
+        ) *
+
+        Math.cos(
+            toRadians(lat2)
+        ) *
+
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+
+    const c =
+        2 *
+        Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1 - a)
+        );
+
+
+    return R * c;
+}
+
+
+function toRadians(value) {
+
+    return (
+        value *
+        Math.PI /
+        180
+    );
+}
+
+
+/* =========================
+   HELPERS
+   ========================= */
+
+function validCoordinates(
+    latitude,
+    longitude
+) {
+
+    const lat =
+        Number(latitude);
+
+    const lon =
+        Number(longitude);
+
+
+    return (
+        Number.isFinite(lat) &&
+        Number.isFinite(lon) &&
+        lat >= -90 &&
+        lat <= 90 &&
+        lon >= -180 &&
+        lon <= 180
+    );
+}
+
+
+function setText(
+    id,
+    value
+) {
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+    if (element) {
+        element.textContent =
+            value;
+    }
+}
+
+
+function formatDate(value) {
+
+    if (!value) {
+        return "N/A";
+    }
+
+
+    const date =
+        new Date(value);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return value;
+    }
+
+
+    return date.toLocaleString();
+}
+
+
+/* =========================
+   BUTTONS
+   ========================= */
+
+document
+    .getElementById(
+        "locateBtn"
+    )
+    .addEventListener(
+        "click",
+        locateUser
+    );
+
+
+document
+    .getElementById(
+        "refreshBtn"
+    )
+    .addEventListener(
+        "click",
+        loadMapData
+    );
+
+
+/* =========================
+   START
+   ========================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        initMap();
+
+        loadMapData();
+
+
+        /* AUTO REFRESH */
+
+        autoRefreshTimer =
+            setInterval(
+                loadMapData,
+                30000
+            );
+    }
+);
+
+
+/* =========================
+   FULLSCREEN MAP
+========================= */
+
+const fullscreenBtn =
+    document.getElementById("fullscreenBtn");
+
+if (fullscreenBtn) {
+
+    fullscreenBtn.addEventListener(
+        "click",
+        function () {
+
+            const container =
+                document.querySelector(".map-container");
+
+            if (!container) {
+                return;
+            }
+
+            container.classList.toggle(
+                "fullscreen"
+            );
+
+            if (
+                container.classList.contains(
+                    "fullscreen"
+                )
+            ) {
+
+                fullscreenBtn.textContent =
+                    "✕ Exit Fullscreen";
+
+            } else {
+
+                fullscreenBtn.textContent =
+                    "⛶ Fullscreen";
+            }
+
+            setTimeout(
+                function () {
+                    map.invalidateSize();
+                },
+                200
+            );
+        }
+    );
+}

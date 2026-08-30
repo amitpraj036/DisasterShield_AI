@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Citizen Dashboard - DisasterShield AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .topbar {
+            background: linear-gradient(135deg, #0f172a, #1e3a5f);
+            color: white;
+            padding: 18px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 23px;
+        }
+
+        .brand p {
+            margin: 4px 0 0;
+            opacity: .8;
+            font-size: 13px;
+        }
+
+        .logout-btn {
+            border: 1px solid rgba(255,255,255,.3);
+            background: rgba(255,255,255,.1);
+            color: white;
+            padding: 9px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 25px auto;
+        }
+
+        .welcome {
+            background: white;
+            padding: 22px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+        }
+
+        .welcome h2 {
+            margin: 0 0 6px;
+        }
+
+        .welcome p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+        }
+
+        .card-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            margin: 0 0 7px;
+        }
+
+        .card p {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .action-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 15px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+        }
+
+        .alert {
+            border-left: 5px solid;
+            padding: 14px;
+            margin: 12px 0;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .alert.high {
+            border-color: #f97316;
+        }
+
+        .alert.critical {
+            border-color: #dc2626;
+        }
+
+        .alert.moderate {
+            border-color: #eab308;
+        }
+
+        .alert.low {
+            border-color: #22c55e;
+        }
+
+        .alert h3 {
+            margin: 0 0 6px;
+        }
+
+        .alert p {
+            margin: 5px 0;
+        }
+
+        .report {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 12px 0;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .report h3 {
+            margin: 0;
+            text-transform: capitalize;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.verified {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 25px;
+            color: #64748b;
+        }
+
+        .error {
+            color: #b91c1c;
+            background: #fee2e2;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .success {
+            color: #166534;
+            background: #dcfce7;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .profile {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .profile-item {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .profile-item span {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .profile-item strong {
+            word-break: break-word;
+        }
+
+        @media (max-width: 600px) {
+            .topbar {
+                padding: 15px;
+            }
+
+            .container {
+                width: 92%;
+            }
+
+            .report-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    
+        .sos-card {
+            border: 2px solid #dc2626;
+            background: linear-gradient(145deg, #fff, #fff1f2);
+        }
+
+        .sos-card h3 {
+            color: #991b1b;
+        }
+
+        .sos-btn {
+            background: #dc2626;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, .25);
+        }
+
+        .sos-btn:hover {
+            background: #b91c1c;
+        }
+
+        .live-alert-banner {
+            display: none;
+            margin-bottom: 20px;
+            padding: 18px 20px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #991b1b, #dc2626);
+            color: white;
+            box-shadow: 0 8px 24px rgba(220,38,38,.25);
+        }
+        .live-alert-banner.show { display: block; }
+        .live-alert-banner h2 { margin: 0 0 6px; }
+        .live-alert-banner p { margin: 0; line-height: 1.5; }
+        .live-alert-meta { margin-top: 8px; font-size: 12px; opacity: .9; }
+        .alert-time { color: #64748b; font-size: 12px; }
+
+    </style>
+
+<style>
+.site-footer {
+    margin-top: 40px;
+    background: #0f172a;
+    color: #cbd5e1;
+    padding: 30px 20px;
+    text-align: center;
+    border-top: 1px solid #334155;
+}
+
+.footer-content {
+    max-width: 1100px;
+    margin: auto;
+}
+
+.footer-brand {
+    color: white;
+    font-size: 19px;
+    margin-bottom: 8px;
+}
+
+.site-footer p {
+    margin: 7px 0;
+    font-size: 13px;
+}
+
+.footer-description {
+    color: #94a3b8;
+}
+
+.footer-features {
+    margin-top: 12px;
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.footer-divider {
+    width: 80px;
+    height: 1px;
+    background: #475569;
+    margin: 18px auto;
+}
+
+.footer-credit {
+    color: #e2e8f0 !important;
+    font-size: 14px !important;
+}
+
+.footer-credit strong {
+    color: white;
+}
+
+.footer-copy {
+    color: #64748b !important;
+    font-size: 11px !important;
+}
+</style>
+
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="brand">
+        <h1>🛡️ DisasterShield AI</h1>
+        <p>Citizen Emergency & Disaster Management Portal</p>
+    </div>
+
+    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+
+        <a href="/"
+           style="color:white; text-decoration:none; padding:9px 12px;
+                  border:1px solid rgba(255,255,255,.3);
+                  border-radius:8px;">
+            🏠 Home
+        </a>
+
+        <a href="/citizen/map"
+           style="color:white; text-decoration:none; padding:9px 12px;
+                  border:1px solid rgba(255,255,255,.3);
+                  border-radius:8px;">
+            🗺️ Map
+        </a>
+
+        <a href="/citizen/report"
+           style="color:white; text-decoration:none; padding:9px 12px;
+                  border:1px solid rgba(255,255,255,.3);
+                  border-radius:8px;">
+            🚨 Report
+        </a>
+
+        <a href="/citizen/emergency"
+           style="color:white; text-decoration:none; padding:9px 12px;
+                  border:1px solid rgba(255,255,255,.3);
+                  border-radius:8px;">
+            🆘 Emergency
+        </a>
+
+        <button class="logout-btn" onclick="logout()">
+            Logout
+        </button>
+
+    </div>
+
+</header>
+
+<main class="container">
+
+    <section class="welcome">
+        <h2>Welcome, {{ user.name }} 👋</h2>
+        <p>
+            Report disasters, monitor your reports and stay informed about active alerts.
+        </p>
+    </section>
+
+
+    <!-- QUICK ACTIONS -->
+
+<section class="grid">
+
+    <!-- EMERGENCY SOS -->
+
+    <div class="card sos-card">
+
+        <div class="card-icon">🆘</div>
+
+        <h3>Emergency SOS</h3>
+
+        <p>
+            Send an emergency request with your current location
+            and get immediate assistance options.
+        </p>
+
+        <a href="/citizen/emergency" class="action-btn sos-btn">
+            🆘 Emergency SOS
+        </a>
+
+    </div>
+
+
+    <!-- REPORT DISASTER -->
+
+    <div class="card">
+
+        <div class="card-icon">🚨</div>
+
+        <h3>Report Disaster</h3>
+
+        <p>
+            Report a flood, fire, earthquake, landslide
+            or other emergency.
+        </p>
+
+        <a href="/citizen/report" class="action-btn">
+            Report Now
+        </a>
+
+    </div>
+
+
+    <!-- GIS MAP -->
+
+    <div class="card">
+
+        <div class="card-icon">🗺️</div>
+
+        <h3>GIS Map</h3>
+
+        <p>
+            View disaster reports, emergency alerts
+            and risk information on the map.
+        </p>
+
+        <a href="/citizen/map" class="action-btn">
+            Open Map
+        </a>
+
+    </div>
+
+</section>
+
+
+    <!-- PROFILE -->
+
+    <section class="panel">
+
+        <h2>👤 My Profile</h2>
+
+        <div class="profile">
+
+            <div class="profile-item">
+                <span>Name</span>
+                <strong id="profileName">Loading...</strong>
+            </div>
+
+            <div class="profile-item">
+                <span>Email</span>
+                <strong id="profileEmail">Loading...</strong>
+            </div>
+
+            <div class="profile-item">
+                <span>Account Type</span>
+                <strong id="profileRole">Citizen</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- LIVE EMERGENCY BROADCAST -->
+
+    <section id="liveAlertBanner" class="live-alert-banner" aria-live="assertive">
+        <h2>🚨 LIVE EMERGENCY ALERT</h2>
+        <p id="liveAlertMessage">Checking active disaster alerts...</p>
+        <div id="liveAlertMeta" class="live-alert-meta"></div>
+    </section>
+
+    <!-- ACTIVE ALERTS -->
+
+    <section class="panel">
+
+        <h2>🚨 Active Disaster Alerts</h2>
+
+        <div id="alertsContainer">
+            Loading alerts...
+        </div>
+
+    </section>
+
+
+    <!-- MY REPORTS -->
+
+    <section class="panel">
+
+        <h2>📋 My Disaster Reports</h2>
+
+        <div id="reportsContainer">
+            Loading reports...
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+async function loadProfile() {
+
+    try {
+
+        const response =
+            await fetch("/api/auth/me");
+
+        const result =
+            await response.json();
+
+        if (!result.success) {
+            window.location.href =
+                "/citizen/login";
+            return;
+        }
+
+        if (result.user.role !== "citizen") {
+            window.location.href = "/admin";
+            return;
+        }
+
+        document.getElementById(
+            "profileName"
+        ).textContent =
+            result.user.name;
+
+        document.getElementById(
+            "profileEmail"
+        ).textContent =
+            result.user.email;
+
+    } catch (error) {
+
+        console.error(
+            "Profile error:",
+            error
+        );
+    }
+}
+
+
+async function loadAlerts() {
+
+    const container =
+        document.getElementById(
+            "alertsContainer"
+        );
+
+    try {
+
+        const response =
+            await fetch("/api/alerts");
+
+        const result =
+            await response.json();
+
+        if (!result.success) {
+            throw new Error(
+                result.message ||
+                "Unable to load alerts"
+            );
+        }
+
+        const alerts =
+            result.alerts || [];
+
+        const now = Date.now();
+        const activeAlerts =
+            alerts.filter(alert => {
+                if (alert.status !== "active") return false;
+                if (!alert.expires_at) return true;
+                const expiry = new Date(alert.expires_at).getTime();
+                return Number.isNaN(expiry) || expiry > now;
+            });
+
+        updateLiveAlertBanner(activeAlerts);
+
+        if (activeAlerts.length === 0) {
+
+            container.innerHTML = `
+                <div class="empty">
+                    ✅ No active disaster alerts.
+                </div>
+            `;
+
+            return;
+        }
+
+        container.innerHTML = "";
+
+        activeAlerts.forEach(alert => {
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                "alert " +
+                (alert.severity || "moderate");
+
+            div.innerHTML = `
+                <h3>
+                    🚨 ${escapeHtml(alert.title)}
+                </h3>
+
+                <p>
+                    ${escapeHtml(alert.message)}
+                </p>
+
+                <small>
+                    Severity:
+                    <strong>
+                        ${escapeHtml(alert.severity)}
+                    </strong>
+                    ${alert.source === "automatic" ? " • 🤖 Automatic" : " • 📢 Admin Broadcast"}
+                </small>
+                <br>
+                <small class="alert-time">
+                    Issued: ${escapeHtml(formatDate(alert.created_at))}
+                    ${alert.expires_at ? " • Expires: " + escapeHtml(formatDate(alert.expires_at)) : ""}
+                </small>
+            `;
+
+            container.appendChild(div);
+        });
+
+    } catch (error) {
+
+        container.innerHTML = `
+            <div class="error">
+                Unable to load disaster alerts.
+            </div>
+        `;
+    }
+}
+
+
+function formatDate(value) {
+    if (!value) return "N/A";
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleString();
+}
+
+function updateLiveAlertBanner(alerts) {
+    const banner = document.getElementById("liveAlertBanner");
+    const message = document.getElementById("liveAlertMessage");
+    const meta = document.getElementById("liveAlertMeta");
+    if (!banner || !message || !meta) return;
+
+    const critical = alerts.filter(a => a.severity === "critical");
+    const top = critical[0] || alerts.find(a => a.severity === "high") || alerts[0];
+
+    if (!top) {
+        banner.classList.remove("show");
+        return;
+    }
+
+    banner.classList.add("show");
+    message.textContent = `${top.title}: ${top.message}`;
+    meta.textContent = `${top.severity.toUpperCase()} • ${top.alert_type || "Emergency"} • ${top.source === "automatic" ? "🤖 Automatic risk alert" : "📢 Admin broadcast"}`;
+}
+
+
+async function loadReports() {
+
+    const container =
+        document.getElementById(
+            "reportsContainer"
+        );
+
+    container.innerHTML =
+        "Loading reports...";
+
+    try {
+
+        const response =
+            await fetch("/api/reports/my");
+
+        const result =
+            await response.json();
+
+        if (!result.success) {
+
+            if (response.status === 401) {
+                window.location.href =
+                    "/citizen/login";
+                return;
+            }
+
+            throw new Error(
+                result.message ||
+                "Unable to load reports"
+            );
+        }
+
+        const reports =
+            result.reports || [];
+
+        if (reports.length === 0) {
+
+            container.innerHTML = `
+                <div class="empty">
+                    You have not submitted any disaster reports yet.
+                </div>
+            `;
+
+            return;
+        }
+
+        container.innerHTML = "";
+
+        reports.forEach(report => {
+
+            const div =
+                document.createElement("div");
+
+            div.className = "report";
+
+            const status =
+                report.status || "pending";
+
+            div.innerHTML = `
+                <div class="report-header">
+
+                    <h3>
+                        ${escapeHtml(
+                            report.disaster_type
+                        )}
+                    </h3>
+
+                    <span class="status ${escapeHtml(status)}">
+                        ${escapeHtml(status)}
+                    </span>
+
+                </div>
+
+                <p>
+                    ${escapeHtml(
+                        report.description
+                    )}
+                </p>
+
+                <small>
+                    Severity:
+                    <strong>
+                        ${escapeHtml(
+                            report.severity
+                        )}
+                    </strong>
+                </small>
+
+                <br>
+
+                <small>
+                    Location:
+                    ${Number(report.latitude).toFixed(4)},
+                    ${Number(report.longitude).toFixed(4)}
+                </small>
+
+                <br>
+
+                <small>
+                    Submitted:
+                    ${formatDate(report.created_at)}
+                </small>
+
+                ${
+                    report.rejection_reason
+                    ? `
+                        <p class="error">
+                            Rejection reason:
+                            ${escapeHtml(
+                                report.rejection_reason
+                            )}
+                        </p>
+                    `
+                    : ""
+                }
+            `;
+
+            container.appendChild(div);
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Reports error:",
+            error
+        );
+
+        container.innerHTML = `
+            <div class="error">
+                Unable to load your reports.
+            </div>
+        `;
+    }
+}
+
+
+async function logout() {
+
+    try {
+
+        await fetch(
+            "/api/auth/logout",
+            {
+                method: "POST"
+            }
+        );
+
+    } finally {
+
+        window.location.href =
+            "/citizen/login";
+    }
+}
+
+
+function formatDate(value) {
+
+    if (!value) {
+        return "N/A";
+    }
+
+    const date =
+        new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return date.toLocaleString();
+}
+
+
+function escapeHtml(value) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return "";
+    }
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+loadProfile();
+loadAlerts();
+loadReports();
+
+setInterval(loadAlerts, 15000);
+
+loadProfile();
+loadAlerts();
+loadReports();
+
+</script>
+
+
+<footer class="site-footer">
+    <div class="footer-content">
+
+        <div class="footer-brand">
+            🛡️ <strong>DisasterShield AI</strong>
+        </div>
+
+        <p class="footer-description">
+            AI-Powered Disaster Management & Emergency Response Platform
+        </p>
+
+        <div class="footer-features">
+            Real-time Alerts • GIS Risk Mapping • Citizen Reporting • Emergency Assistance
+        </div>
+
+        <div class="footer-divider"></div>
+
+        <p class="footer-credit">
+            Design &amp; Deployed by <strong>~Amit</strong>
+        </p>
+
+        <p class="footer-copy">
+            © 2026 DisasterShield AI • SIH Project
+        </p>
+
+    </div>
+</footer>
+
+</body>
+</html>

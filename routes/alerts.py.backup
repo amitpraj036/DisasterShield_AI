@@ -1,0 +1,530 @@
+from datetime import datetime
+
+from flask import Blueprint, jsonify, request
+
+from models import db, Alert
+from services.auth_service import admin_required, get_current_user
+
+
+alerts_bp = Blueprint(
+    "alerts",
+    __name__,
+    url_prefix="/api/alerts"
+)
+
+
+ALLOWED_SEVERITIES = {
+    "low",
+    "moderate",
+    "high",
+    "critical"
+}
+
+
+def serialize_alert(alert):
+    return {
+        "id": alert.id,
+        "title": alert.title,
+        "message": alert.message,
+        "alert_type": alert.alert_type,
+        "severity": alert.severity,
+        "latitude": alert.latitude,
+        "longitude": alert.longitude,
+        "radius_km": alert.radius_km,
+        "source": alert.source,
+        "status": alert.status,
+        "created_by": alert.created_by,
+        "created_at": (
+            alert.created_at.isoformat()
+            if alert.created_at
+            else None
+        ),
+        "expires_at": (
+            alert.expires_at.isoformat()
+            if alert.expires_at
+            else None
+        )
+    }
+
+
+# ============================================================
+# PUBLIC — GET ALERTS
+# ============================================================
+
+@alerts_bp.route("", methods=["GET"])
+def get_alerts():
+
+    alerts = (
+        Alert.query
+        .order_by(Alert.created_at.desc())
+        .all()
+    )
+
+    return jsonify({
+        "success": True,
+        "count": len(alerts),
+        "alerts": [serialize_alert(alert) for alert in alerts]
+    })
+
+
+# ============================================================
+# ADMIN — CREATE ALERT
+# ============================================================
+
+@alerts_bp.route("", methods=["POST"])
+@admin_required
+def create_alert():
+
+    data = request.get_json(silent=True) or {}
+
+    title = str(data.get("title", "")).strip()
+    message = str(data.get("message", "")).strip()
+    alert_type = str(
+        data.get("alert_type", "")
+    ).strip().lower()
+
+    severity = str(
+        data.get("severity", "moderate")
+    ).strip().lower()
+
+    if not title:
+        return jsonify({
+            "success": False,
+            "message": "Title is required"
+        }), 400
+
+    if len(title) > 200:
+        return jsonify({
+            "success": False,
+            "message": "Title must not exceed 200 characters"
+        }), 400
+
+    if not message:
+        return jsonify({
+            "success": False,
+            "message": "Message is required"
+        }), 400
+
+    if not alert_type:
+        return jsonify({
+            "success": False,
+            "message": "Alert type is required"
+        }), 400
+
+    if severity not in ALLOWED_SEVERITIES:
+        return jsonify({
+            "success": False,
+            "message": "Invalid severity"
+        }), 400
+
+
+    # --------------------------------------------------------
+    # LOCATION
+    # --------------------------------------------------------
+
+    latitude = data.get("latitude")
+    longitude = data.get("longitude")
+    radius_km = data.get("radius_km")
+
+    try:
+        if latitude not in (None, ""):
+            latitude = float(latitude)
+
+        if longitude not in (None, ""):
+            longitude = float(longitude)
+
+        if radius_km not in (None, ""):
+            radius_km = float(radius_km)
+
+    except (TypeError, ValueError):
+
+        return jsonify({
+            "success": False,
+            "message": "Latitude, longitude and radius must be numeric"
+        }), 400
+
+
+    if latitude is not None:
+        if latitude < -90 or latitude > 90:
+            return jsonify({
+                "success": False,
+                "message": "Latitude must be between -90 and 90"
+            }), 400
+
+    if longitude is not None:
+        if longitude < -180 or longitude > 180:
+            return jsonify({
+                "success": False,
+                "message": "Longitude must be between -180 and 180"
+            }), 400
+
+    if radius_km is not None and radius_km <= 0:
+        return jsonify({
+            "success": False,
+            "message": "Radius must be greater than 0"
+        }), 400
+
+
+    # --------------------------------------------------------
+    # EXPIRY
+    # --------------------------------------------------------
+
+    expires_at = None
+
+    expires_value = data.get("expires_at")
+
+    if expires_value:
+
+        try:
+            expires_at = datetime.fromisoformat(
+                str(expires_value).replace("Z", "+00:00")
+            )
+
+            # Store as naive UTC-compatible datetime
+            if expires_at.tzinfo is not None:
+                expires_at = expires_at.astimezone().replace(
+                    tzinfo=None
+                )
+
+        except ValueError:
+
+            return jsonify({
+                "success": False,
+                "message": "Invalid expiry date/time"
+            }), 400
+
+
+    admin = get_current_user()
+
+
+    alert = Alert(
+        title=title,
+        message=message,
+        alert_type=alert_type,
+        severity=severity,
+        latitude=latitude,
+        longitude=longitude,
+        radius_km=radius_km,
+        source=str(
+            data.get("source", "admin")
+        ).strip() or "admin",
+        status="active",
+        created_by=admin.id,
+        expires_at=expires_at
+    )
+
+    db.session.add(alert)
+    db.session.commit()
+
+
+    return jsonify({
+        "success": True,
+        "message": "Alert created successfully",
+        "alert": serialize_alert(alert)
+    }), 201
+
+
+# ============================================================
+# ADMIN — DEACTIVATE
+# ============================================================
+
+@alerts_bp.route(
+    "/<int:alert_id>/deactivate",
+    methods=["POST"]
+)
+@admin_required
+def deactivate_alert(alert_id):
+
+    alert = db.session.get(
+        Alert,
+        alert_id
+    )
+
+    if not alert:
+
+        return jsonify({
+            "success": False,
+            "message": "Alert not found"
+        }), 404
+
+    if alert.status == "inactive":
+
+        return jsonify({
+            "success": False,
+            "message": "Alert is already inactive"
+        }), 409
+
+
+    alert.status = "inactive"
+
+    db.session.commit()
+
+
+    return jsonify({
+        "success": True,
+        "message": "Alert deactivated successfully",
+        "alert": serialize_alert(alert)
+    })
+
+
+# ============================================================
+# ADMIN — REACTIVATE
+# ============================================================
+
+@alerts_bp.route(
+    "/<int:alert_id>/activate",
+    methods=["POST"]
+)
+@admin_required
+def activate_alert(alert_id):
+
+    alert = db.session.get(
+        Alert,
+        alert_id
+    )
+
+    if not alert:
+
+        return jsonify({
+            "success": False,
+            "message": "Alert not found"
+        }), 404
+
+    if alert.status == "active":
+
+        return jsonify({
+            "success": False,
+            "message": "Alert is already active"
+        }), 409
+
+
+    alert.status = "active"
+
+    db.session.commit()
+
+
+    return jsonify({
+        "success": True,
+        "message": "Alert activated successfully",
+        "alert": serialize_alert(alert)
+    })
+
+
+# ============================================================
+# ADMIN — UPDATE ALERT
+# ============================================================
+
+@alerts_bp.route(
+    "/<int:alert_id>",
+    methods=["PUT"]
+)
+@admin_required
+def update_alert(alert_id):
+
+    alert = db.session.get(
+        Alert,
+        alert_id
+    )
+
+    if not alert:
+
+        return jsonify({
+            "success": False,
+            "message": "Alert not found"
+        }), 404
+
+
+    data = request.get_json(silent=True) or {}
+
+
+    if "title" in data:
+
+        title = str(data.get("title", "")).strip()
+
+        if not title:
+            return jsonify({
+                "success": False,
+                "message": "Title is required"
+            }), 400
+
+        if len(title) > 200:
+            return jsonify({
+                "success": False,
+                "message": "Title must not exceed 200 characters"
+            }), 400
+
+        alert.title = title
+
+
+    if "message" in data:
+
+        message = str(
+            data.get("message", "")
+        ).strip()
+
+        if not message:
+            return jsonify({
+                "success": False,
+                "message": "Message is required"
+            }), 400
+
+        alert.message = message
+
+
+    if "alert_type" in data:
+
+        alert_type = str(
+            data.get("alert_type", "")
+        ).strip().lower()
+
+        if not alert_type:
+            return jsonify({
+                "success": False,
+                "message": "Alert type is required"
+            }), 400
+
+        alert.alert_type = alert_type
+
+
+    if "severity" in data:
+
+        severity = str(
+            data.get("severity", "")
+        ).strip().lower()
+
+        if severity not in ALLOWED_SEVERITIES:
+            return jsonify({
+                "success": False,
+                "message": "Invalid severity"
+            }), 400
+
+        alert.severity = severity
+
+
+    if "latitude" in data:
+
+        try:
+            alert.latitude = (
+                None
+                if data["latitude"] in (None, "")
+                else float(data["latitude"])
+            )
+        except (TypeError, ValueError):
+
+            return jsonify({
+                "success": False,
+                "message": "Invalid latitude"
+            }), 400
+
+
+    if "longitude" in data:
+
+        try:
+            alert.longitude = (
+                None
+                if data["longitude"] in (None, "")
+                else float(data["longitude"])
+            )
+        except (TypeError, ValueError):
+
+            return jsonify({
+                "success": False,
+                "message": "Invalid longitude"
+            }), 400
+
+
+    if "radius_km" in data:
+
+        try:
+            alert.radius_km = (
+                None
+                if data["radius_km"] in (None, "")
+                else float(data["radius_km"])
+            )
+        except (TypeError, ValueError):
+
+            return jsonify({
+                "success": False,
+                "message": "Invalid radius"
+            }), 400
+
+
+    if "expires_at" in data:
+
+        value = data.get("expires_at")
+
+        if value in (None, ""):
+
+            alert.expires_at = None
+
+        else:
+
+            try:
+                alert.expires_at = datetime.fromisoformat(
+                    str(value).replace("Z", "+00:00")
+                )
+
+            except ValueError:
+
+                return jsonify({
+                    "success": False,
+                    "message": "Invalid expiry date/time"
+                }), 400
+
+
+    db.session.commit()
+
+
+    return jsonify({
+        "success": True,
+        "message": "Alert updated successfully",
+        "alert": serialize_alert(alert)
+    })
+
+
+# ============================================================
+# ADMIN — DELETE ALERT
+# ============================================================
+
+@alerts_bp.route(
+    "/<int:alert_id>",
+    methods=["DELETE"]
+)
+@admin_required
+def delete_alert(alert_id):
+
+    alert = db.session.get(
+        Alert,
+        alert_id
+    )
+
+    if not alert:
+
+        return jsonify({
+            "success": False,
+            "message": "Alert not found"
+        }), 404
+
+
+    # Safety: don't physically delete automatic alerts.
+    # Deactivate them instead.
+
+    if alert.source == "automatic":
+
+        return jsonify({
+            "success": False,
+            "message": (
+                "Automatic alerts cannot be deleted. "
+                "Deactivate the alert instead."
+            )
+        }), 409
+
+
+    db.session.delete(alert)
+    db.session.commit()
+
+
+    return jsonify({
+        "success": True,
+        "message": "Alert deleted successfully"
+    })

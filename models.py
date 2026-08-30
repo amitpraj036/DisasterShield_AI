@@ -1,0 +1,354 @@
+from datetime import datetime
+
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+
+
+db = SQLAlchemy()
+
+
+class User(db.Model):
+    __tablename__ = "users"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    name = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    email = db.Column(
+        db.String(150),
+        unique=True,
+        nullable=False,
+        index=True
+    )
+
+    password_hash = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    role = db.Column(
+        db.String(20),
+        nullable=False,
+        default="citizen"
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    reports = db.relationship(
+        "DisasterReport",
+        foreign_keys="DisasterReport.user_id",
+        backref="reporter",
+        lazy=True
+    )
+
+    verified_reports = db.relationship(
+        "DisasterReport",
+        foreign_keys="DisasterReport.verified_by",
+        backref="verifier",
+        lazy=True
+    )
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(
+            self.password_hash,
+            password
+        )
+
+    def __repr__(self):
+        return f"<User {self.email}>"
+
+
+class DisasterReport(db.Model):
+    __tablename__ = "disaster_reports"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id"),
+        nullable=False,
+        index=True
+    )
+
+    disaster_type = db.Column(
+        db.String(50),
+        nullable=False,
+        index=True
+    )
+
+    description = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+    latitude = db.Column(
+        db.Float,
+        nullable=False
+    )
+
+    longitude = db.Column(
+        db.Float,
+        nullable=False
+    )
+
+    severity = db.Column(
+        db.String(20),
+        nullable=False,
+        default="moderate"
+    )
+
+    photo_path = db.Column(
+        db.String(500),
+        nullable=True
+    )
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="pending",
+        index=True
+    )
+
+    verified_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id"),
+        nullable=True
+    )
+
+    verified_at = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
+    rejection_reason = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+        index=True
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False
+    )
+
+    def __repr__(self):
+        return f"<DisasterReport {self.id}>"
+
+class Alert(db.Model):
+    __tablename__ = "alerts"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    title = db.Column(
+        db.String(200),
+        nullable=False
+    )
+
+    message = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+    alert_type = db.Column(
+        db.String(50),
+        nullable=False,
+        index=True
+    )
+
+    severity = db.Column(
+        db.String(20),
+        nullable=False,
+        default="moderate",
+        index=True
+    )
+
+    latitude = db.Column(
+        db.Float,
+        nullable=True
+    )
+
+    longitude = db.Column(
+        db.Float,
+        nullable=True
+    )
+
+    radius_km = db.Column(
+        db.Float,
+        nullable=True
+    )
+
+    source = db.Column(
+        db.String(50),
+        nullable=False,
+        default="admin"
+    )
+
+    status = db.Column(
+        db.String(20),
+        nullable=False,
+        default="active",
+        index=True
+    )
+
+    created_by = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id"),
+        nullable=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+        index=True
+    )
+
+    expires_at = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
+    def __repr__(self):
+        return f"<Alert {self.id}>"
+
+class RiskData(db.Model):
+    __tablename__ = "risk_data"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    latitude = db.Column(
+        db.Float,
+        nullable=False,
+        index=True
+    )
+
+    longitude = db.Column(
+        db.Float,
+        nullable=False,
+        index=True
+    )
+
+    rainfall_mm = db.Column(
+        db.Float,
+        nullable=True
+    )
+
+    soil_moisture = db.Column(
+        db.Float,
+        nullable=True
+    )
+
+    slope_degree = db.Column(
+        db.Float,
+        nullable=True
+    )
+
+    elevation = db.Column(
+        db.Float,
+        nullable=True
+    )
+
+    historical_landslides = db.Column(
+        db.Integer,
+        nullable=False,
+        default=0
+    )
+
+    risk_score = db.Column(
+        db.Float,
+        nullable=True
+    )
+
+    risk_level = db.Column(
+        db.String(20),
+        nullable=True,
+        index=True
+    )
+
+    source = db.Column(
+        db.String(50),
+        nullable=False
+    )
+
+    recorded_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+        index=True
+    )
+
+    def __repr__(self):
+        return f"<RiskData {self.id}>"
+
+class DataSource(db.Model):
+    __tablename__ = "data_sources"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    name = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    source_type = db.Column(
+        db.String(50),
+        nullable=False
+    )
+
+    description = db.Column(
+        db.Text,
+        nullable=True
+    )
+
+    is_active = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=True
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    last_sync_at = db.Column(
+        db.DateTime,
+        nullable=True
+    )
+
+    def __repr__(self):
+        return f"<DataSource {self.name}>"

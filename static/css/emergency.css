@@ -1,0 +1,849 @@
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --navy: #0f172a;
+    --blue: #2563eb;
+    --blue-dark: #1d4ed8;
+    --red: #dc2626;
+    --red-dark: #991b1b;
+    --orange: #f97316;
+    --green: #16a34a;
+    --yellow: #eab308;
+    --text: #172033;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --background: #f8fafc;
+    --white: #ffffff;
+}
+
+body {
+    margin: 0;
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background:
+        linear-gradient(
+            180deg,
+            #eef4ff 0%,
+            #f8fafc 35%,
+            #ffffff 100%
+        );
+
+    color: var(--text);
+}
+
+button,
+a {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+a {
+    text-decoration: none;
+}
+
+.emergency-app {
+    width: min(1180px, 100%);
+    margin: auto;
+    padding: 20px;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.emergency-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+
+    padding: 18px 22px;
+
+    background: var(--navy);
+    color: white;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 15px 40px rgba(15, 23, 42, 0.18);
+}
+
+.brand-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-icon {
+    width: 48px;
+    height: 48px;
+
+    display: grid;
+    place-items: center;
+
+    background: rgba(255,255,255,0.12);
+    border-radius: 14px;
+
+    font-size: 25px;
+}
+
+.brand-area h1 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.brand-area p {
+    margin: 3px 0 0;
+    color: #cbd5e1;
+    font-size: 12px;
+}
+
+.dashboard-btn {
+    color: white;
+    background: rgba(255,255,255,0.1);
+
+    border: 1px solid rgba(255,255,255,0.2);
+
+    padding: 10px 15px;
+    border-radius: 10px;
+
+    font-weight: 700;
+}
+
+
+/* ============================================================
+   EMERGENCY BANNER
+   ============================================================ */
+
+.emergency-banner {
+    margin-top: 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 18px;
+
+    padding: 20px;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            120deg,
+            #991b1b,
+            #dc2626
+        );
+
+    color: white;
+
+    box-shadow:
+        0 18px 35px rgba(220, 38, 38, 0.25);
+}
+
+.banner-icon {
+    font-size: 38px;
+}
+
+.banner-content {
+    flex: 1;
+}
+
+.banner-content h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+}
+
+.banner-content p {
+    margin: 0;
+    opacity: .9;
+}
+
+.sos-button {
+    width: 74px;
+    height: 74px;
+
+    border-radius: 50%;
+
+    border: 5px solid rgba(255,255,255,.35);
+
+    background: white;
+    color: var(--red-dark);
+
+    font-weight: 900;
+    font-size: 20px;
+
+    box-shadow:
+        0 0 0 8px rgba(255,255,255,.08);
+}
+
+.sos-button:active {
+    transform: scale(.95);
+}
+
+
+/* ============================================================
+   COMMON SECTIONS
+   ============================================================ */
+
+section {
+    margin-top: 18px;
+
+    background: white;
+
+    border: 1px solid var(--border);
+
+    border-radius: 18px;
+
+    padding: 22px;
+
+    box-shadow:
+        0 8px 25px rgba(15,23,42,.05);
+}
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+
+    margin-bottom: 18px;
+}
+
+.section-title h2 {
+    margin: 3px 0;
+    font-size: 20px;
+}
+
+.section-title p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.eyebrow {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .12em;
+    color: var(--blue);
+}
+
+
+/* ============================================================
+   LOCATION
+   ============================================================ */
+
+.location-info {
+    display: grid;
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 12px;
+}
+
+.coordinate-box {
+    padding: 15px;
+
+    border: 1px solid var(--border);
+    border-radius: 13px;
+
+    background: var(--background);
+}
+
+.coordinate-box span {
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 11px;
+}
+
+.coordinate-box strong {
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 17px;
+}
+
+.location-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin-top: 15px;
+}
+
+.primary-button,
+.secondary-button {
+    border: none;
+
+    padding: 12px 16px;
+
+    border-radius: 11px;
+
+    font-weight: 800;
+}
+
+.primary-button {
+    background: var(--blue);
+    color: white;
+}
+
+.primary-button:hover {
+    background: var(--blue-dark);
+}
+
+.secondary-button {
+    background: #e2e8f0;
+    color: var(--text);
+}
+
+.secondary-button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.status-badge,
+.progress-badge {
+    padding: 6px 10px;
+
+    border-radius: 999px;
+
+    background: #f1f5f9;
+
+    color: var(--muted);
+
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.status-badge.detected {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.location-message {
+    margin-top: 12px;
+
+    padding: 11px 13px;
+
+    background: #eff6ff;
+
+    border-radius: 10px;
+
+    color: #1e40af;
+
+    font-size: 12px;
+}
+
+
+/* ============================================================
+   SERVICES
+   ============================================================ */
+
+.services-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 12px;
+}
+
+.service-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    padding: 17px;
+
+    border-radius: 15px;
+
+    border: 1px solid var(--border);
+
+    background: white;
+}
+
+.service-card.critical {
+    border-left: 5px solid var(--red);
+}
+
+.service-card.high {
+    border-left: 5px solid var(--orange);
+}
+
+.service-icon {
+    width: 50px;
+    height: 50px;
+
+    flex: 0 0 50px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 13px;
+
+    background: #f8fafc;
+
+    font-size: 26px;
+}
+
+.service-info {
+    flex: 1;
+}
+
+.service-info h3 {
+    margin: 0;
+    font-size: 15px;
+}
+
+.service-info p {
+    margin: 3px 0;
+
+    color: var(--muted);
+
+    font-size: 11px;
+}
+
+.service-number {
+    font-size: 18px;
+}
+
+.call-button {
+    padding: 10px 13px;
+
+    border-radius: 10px;
+
+    background: var(--red);
+    color: white;
+
+    font-size: 12px;
+    font-weight: 900;
+}
+
+
+/* ============================================================
+   FACILITIES
+   ============================================================ */
+
+.facility-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 12px;
+}
+
+.facility-card {
+    border: 1px solid var(--border);
+
+    background: #f8fafc;
+
+    border-radius: 14px;
+
+    padding: 18px;
+
+    text-align: left;
+
+    transition:
+        transform .15s ease,
+        box-shadow .15s ease;
+}
+
+.facility-card:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 20px rgba(15,23,42,.08);
+}
+
+.facility-card span {
+    display: block;
+
+    font-size: 28px;
+
+    margin-bottom: 8px;
+}
+
+.facility-card strong {
+    display: block;
+}
+
+.facility-card small {
+    display: block;
+
+    color: var(--muted);
+
+    margin-top: 4px;
+
+    font-size: 11px;
+}
+
+
+/* ============================================================
+   GUIDES
+   ============================================================ */
+
+.guide-tabs {
+    display: flex;
+
+    gap: 8px;
+
+    overflow-x: auto;
+
+    padding-bottom: 8px;
+}
+
+.guide-tab {
+    flex: 0 0 auto;
+
+    border: 1px solid var(--border);
+
+    background: white;
+
+    padding: 10px 13px;
+
+    border-radius: 999px;
+
+    font-weight: 800;
+
+    font-size: 12px;
+}
+
+.guide-tab.active {
+    background: var(--navy);
+    color: white;
+}
+
+.guide-panel {
+    display: none;
+}
+
+.guide-panel.active {
+    display: block;
+}
+
+.guide-heading {
+    display: flex;
+
+    gap: 14px;
+
+    align-items: center;
+
+    padding: 16px;
+
+    border-radius: 14px;
+
+    background: #f8fafc;
+}
+
+.guide-heading > span {
+    font-size: 35px;
+}
+
+.guide-heading h3 {
+    margin: 0;
+}
+
+.guide-heading p {
+    margin: 4px 0 0;
+
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+.guide-columns {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 12px;
+
+    margin-top: 13px;
+}
+
+.guide-column {
+    padding: 16px;
+
+    background: #f8fafc;
+
+    border-radius: 14px;
+}
+
+.guide-column.urgent {
+    background: #fff1f2;
+}
+
+.guide-column h4 {
+    margin: 0 0 10px;
+
+    font-size: 12px;
+}
+
+.guide-column ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.guide-column li {
+    margin-bottom: 8px;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   CHECKLIST
+   ============================================================ */
+
+.checklist-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 10px;
+}
+
+.checklist-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 14px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 13px;
+
+    cursor: pointer;
+
+    background: white;
+}
+
+.checklist-item input {
+    display: none;
+}
+
+.checkmark {
+    width: 21px;
+    height: 21px;
+
+    flex: 0 0 21px;
+
+    border: 2px solid #cbd5e1;
+
+    border-radius: 6px;
+}
+
+.checklist-item input:checked + .checkmark {
+    background: var(--green);
+
+    border-color: var(--green);
+
+    position: relative;
+}
+
+.checklist-item input:checked + .checkmark::after {
+    content: "✓";
+
+    color: white;
+
+    position: absolute;
+
+    left: 3px;
+    top: -2px;
+
+    font-weight: 900;
+}
+
+.checklist-icon {
+    font-size: 22px;
+}
+
+.checklist-content {
+    flex: 1;
+}
+
+.checklist-content strong {
+    display: block;
+    font-size: 13px;
+}
+
+.checklist-content small {
+    display: block;
+
+    color: var(--muted);
+
+    margin-top: 3px;
+
+    font-size: 10px;
+}
+
+
+/* ============================================================
+   SAFETY NOTICE
+   ============================================================ */
+
+.safety-notice {
+    display: flex;
+
+    gap: 14px;
+
+    background: #fffbeb;
+
+    border-color: #fde68a;
+}
+
+.notice-icon {
+    font-size: 26px;
+}
+
+.safety-notice h3 {
+    margin: 0;
+}
+
+.safety-notice p {
+    margin: 5px 0 0;
+
+    color: #713f12;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+footer {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    justify-content: center;
+
+    padding: 25px 10px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+}
+
+footer strong {
+    color: var(--text);
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 760px) {
+
+    .emergency-app {
+        padding: 10px;
+    }
+
+    .emergency-header {
+        padding: 14px;
+
+        border-radius: 14px;
+    }
+
+    .brand-area h1 {
+        font-size: 16px;
+    }
+
+    .dashboard-btn {
+        padding: 8px 10px;
+
+        font-size: 11px;
+    }
+
+    .emergency-banner {
+        padding: 16px;
+
+        border-radius: 14px;
+    }
+
+    .banner-icon {
+        display: none;
+    }
+
+    .banner-content h2 {
+        font-size: 18px;
+    }
+
+    .banner-content p {
+        font-size: 11px;
+    }
+
+    .sos-button {
+        width: 62px;
+        height: 62px;
+
+        font-size: 17px;
+    }
+
+    section {
+        padding: 16px;
+
+        border-radius: 14px;
+    }
+
+    .location-info {
+        grid-template-columns:
+            1fr;
+    }
+
+    .services-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+    .facility-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .guide-columns {
+        grid-template-columns:
+            1fr;
+    }
+
+    .checklist-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+    .service-card {
+        padding: 13px;
+    }
+
+    .call-button {
+        padding: 9px;
+    }
+}

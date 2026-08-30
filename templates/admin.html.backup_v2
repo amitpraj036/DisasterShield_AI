@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DisasterShield AI - Admin Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin_dashboard.css') }}"
+    >
+
+    <style>
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .search-box,
+        .filter-box {
+            padding: 11px 13px;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-box {
+            min-width: 150px;
+        }
+
+        .logout-btn {
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 16px;
+            background: #dc2626;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.9;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .action-btn {
+            border: 0;
+            border-radius: 7px;
+            padding: 7px 10px;
+            margin: 2px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .verify-btn {
+            background: #16a34a;
+            color: white;
+        }
+
+        .reject-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .disabled-btn {
+            background: #e5e7eb;
+            color: #667085;
+            cursor: not-allowed;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.verified {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .message {
+            margin-bottom: 12px;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 11px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .empty-row {
+            text-align: center;
+            padding: 25px;
+            color: #667085;
+        }
+
+        @media (max-width: 700px) {
+            .toolbar {
+                flex-direction: column;
+            }
+
+            .search-box,
+            .filter-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div>
+        <h1>DisasterShield AI</h1>
+        <p>Administration & Disaster Monitoring</p>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div class="admin-badge">
+            ADMIN
+        </div>
+
+        <button
+            class="logout-btn"
+            onclick="logoutAdmin()"
+        >
+            Logout
+        </button>
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <!-- STATISTICS -->
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <span>Total Reports</span>
+            <strong id="totalReports">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Pending</span>
+            <strong id="pendingReports">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Verified</span>
+            <strong id="verifiedReports">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Rejected</span>
+            <strong id="rejectedReports">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Active Alerts</span>
+            <strong id="activeAlerts">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Risk Observations</span>
+            <strong id="riskObservations">0</strong>
+        </div>
+
+    </section>
+
+
+    <!-- REPORT MANAGEMENT -->
+
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <div>
+                <h2>Disaster Reports</h2>
+                <p>Review and manage citizen reports.</p>
+            </div>
+
+            <button
+                class="refresh-btn"
+                onclick="loadDashboard()"
+            >
+                ↻ Refresh
+            </button>
+
+        </div>
+
+
+        <div id="message" class="message"></div>
+
+
+        <!-- SEARCH + FILTER -->
+
+        <div class="toolbar">
+
+            <input
+                id="searchInput"
+                class="search-box"
+                type="search"
+                placeholder="🔎 Search by ID, type, severity or location..."
+                oninput="applyFilters()"
+            >
+
+            <select
+                id="statusFilter"
+                class="filter-box"
+                onchange="applyFilters()"
+            >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="verified">Verified</option>
+                <option value="rejected">Rejected</option>
+            </select>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Location</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="reportsTable">
+
+                    <tr>
+                        <td colspan="7" class="loading">
+                            Loading reports...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!--
+
+cat <<'EOF' > templates/admin.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DisasterShield AI - Admin Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin_dashboard.css') }}"
+    >
+
+    <style>
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .search-box,
+        .filter-box {
+            padding: 11px 13px;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-box {
+            min-width: 150px;
+        }
+
+        .logout-btn {
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 16px;
+            background: #dc2626;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.9;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .action-btn {
+            border: 0;
+            border-radius: 7px;
+            padding: 7px 10px;
+            margin: 2px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .verify-btn {
+            background: #16a34a;
+            color: white;
+        }
+
+        .reject-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .disabled-btn {
+            background: #e5e7eb;
+            color: #667085;
+            cursor: not-allowed;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.verified {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .message {
+            margin-bottom: 12px;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 11px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .empty-row {
+            text-align: center;
+            padding: 25px;
+            color: #667085;
+        }
+
+        @media (max-width: 700px) {
+            .toolbar {
+                flex-direction: column;
+            }
+
+            .search-box,
+            .filter-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div>
+        <h1>DisasterShield AI</h1>
+        <p>Administration & Disaster Monitoring</p>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+        <div class="admin-badge">
+            ADMIN
+        </div>
+
+        <button
+            class="logout-btn"
+            onclick="logoutAdmin()"
+        >
+            Logout
+        </button>
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <!-- STATISTICS -->
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <span>Total Reports</span>
+            <strong id="totalReports">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Pending</span>
+            <strong id="pendingReports">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Verified</span>
+            <strong id="verifiedReports">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Rejected</span>
+            <strong id="rejectedReports">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Active Alerts</span>
+            <strong id="activeAlerts">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Risk Observations</span>
+            <strong id="riskObservations">0</strong>
+        </div>
+
+    </section>
+
+
+    <!-- REPORT MANAGEMENT -->
+
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <div>
+                <h2>Disaster Reports</h2>
+                <p>Review and manage citizen reports.</p>
+            </div>
+
+            <button
+                class="refresh-btn"
+                onclick="loadDashboard()"
+            >
+                ↻ Refresh
+            </button>
+
+        </div>
+
+
+        <div id="message" class="message"></div>
+
+
+        <!-- SEARCH + FILTER -->
+
+        <div class="toolbar">
+
+            <input
+                id="searchInput"
+                class="search-box"
+                type="search"
+                placeholder="🔎 Search by ID, type, severity or location..."
+                oninput="applyFilters()"
+            >
+
+            <select
+                id="statusFilter"
+                class="filter-box"
+                onchange="applyFilters()"
+            >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="verified">Verified</option>
+                <option value="rejected">Rejected</option>
+            </select>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Location</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="reportsTable">
+
+                    <tr>
+                        <td colspan="7" class="loading">
+                            Loading reports...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+      <!-- QUICK ACTIONS -->
+
+    <section class="quick-actions">
+
+        <a href="/api/gis/map">
+            🗺️ GIS Dashboard
+        </a>
+
+        <a href="/api/data/sources">
+            📡 Data Sources
+        </a>
+
+        <a href="/api/risk">
+            📊 Risk Data
+        </a>
+
+        <a href="/api/admin/reports">
+            📋 Reports API
+        </a>
+
+    </section>
+
+</main>
+
+
+<script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+
+</body>
+</html>

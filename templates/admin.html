@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DisasterShield AI - Admin Control Center</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin_dashboard.css') }}"
+    >
+
+    <style>
+        .admin-page {
+            min-height: 100vh;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-badge {
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: #111827;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .5px;
+        }
+
+        .logout-btn {
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 16px;
+            background: #dc2626;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            opacity: .9;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(140px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.05);
+        }
+
+        .stat-card span {
+            display: block;
+            color: #667085;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card strong {
+            font-size: 28px;
+            color: #111827;
+        }
+
+        .stat-card.danger strong {
+            color: #dc2626;
+        }
+
+        .stat-card.warning strong {
+            color: #d97706;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 18px 0;
+        }
+
+        .search-box,
+        .filter-box {
+            padding: 11px 13px;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            background: #fff;
+            font-size: 14px;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .filter-box {
+            min-width: 160px;
+        }
+
+        .refresh-btn {
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 15px;
+            background: #2563eb;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .refresh-btn:hover {
+            opacity: .9;
+        }
+
+        .message {
+            margin-bottom: 12px;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eaecf0;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            font-size: 12px;
+            color: #475467;
+            background: #f8fafc;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        td {
+            font-size: 13px;
+        }
+
+        tr.high-risk {
+            background: #fff7ed;
+        }
+
+        tr.critical-risk {
+            background: #fef2f2;
+        }
+
+        .severity {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .severity.low {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .severity.medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .severity.high {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .severity.critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .status.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.verified {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-btn {
+            border: 0;
+            border-radius: 7px;
+            padding: 7px 9px;
+            margin: 2px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .view-btn {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .verify-btn {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .reject-btn {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .disabled-btn {
+            background: #e5e7eb;
+            color: #667085;
+            cursor: not-allowed;
+        }
+
+        .empty-row {
+            text-align: center;
+            padding: 30px;
+            color: #667085;
+        }
+
+        .location-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .location-link:hover {
+            text-decoration: underline;
+        }
+
+        /* MODAL */
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(15, 23, 42, .65);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-card {
+            width: min(700px, 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 20px;
+            border-bottom: 1px solid #eaecf0;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .close-btn {
+            border: 0;
+            background: transparent;
+            font-size: 26px;
+            cursor: pointer;
+            color: #667085;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .detail-item {
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 9px;
+        }
+
+        .detail-item.full {
+            grid-column: 1 / -1;
+        }
+
+        .detail-label {
+            display: block;
+            font-size: 11px;
+            color: #667085;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .detail-value {
+            color: #111827;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .description-box {
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .quick-actions a {
+            text-decoration: none;
+        }
+
+        @media (max-width: 1100px) {
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-item.full {
+                grid-column: auto;
+            }
+
+            .topbar {
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+<style>
+.site-footer {
+    margin-top: 40px;
+    background: #0f172a;
+    color: #cbd5e1;
+    padding: 30px 20px;
+    text-align: center;
+    border-top: 1px solid #334155;
+}
+
+.footer-content {
+    max-width: 1100px;
+    margin: auto;
+}
+
+.footer-brand {
+    color: white;
+    font-size: 19px;
+    margin-bottom: 8px;
+}
+
+.site-footer p {
+    margin: 7px 0;
+    font-size: 13px;
+}
+
+.footer-description {
+    color: #94a3b8;
+}
+
+.footer-features {
+    margin-top: 12px;
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.footer-divider {
+    width: 80px;
+    height: 1px;
+    background: #475569;
+    margin: 18px auto;
+}
+
+.footer-credit {
+    color: #e2e8f0 !important;
+    font-size: 14px !important;
+}
+
+.footer-credit strong {
+    color: white;
+}
+
+.footer-copy {
+    color: #64748b !important;
+    font-size: 11px !important;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="admin-page">
+
+<header class="topbar">
+
+    <div>
+        <h1>DisasterShield AI</h1>
+        <p>Administration & Disaster Monitoring</p>
+    </div>
+
+    <div class="topbar-right">
+        <div class="admin-badge">ADMIN</div>
+
+        <button class="logout-btn" onclick="logoutAdmin()">
+            Logout
+        </button>
+    </div>
+
+</header>
+
+<main class="container">
+
+    <!-- STATISTICS -->
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <span>Total Reports</span>
+            <strong id="totalReports">0</strong>
+        </div>
+
+        <div class="stat-card warning">
+            <span>Pending</span>
+            <strong id="pendingReports">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Verified</span>
+            <strong id="verifiedReports">0</strong>
+        </div>
+
+        <div class="stat-card danger">
+            <span>Rejected</span>
+            <strong id="rejectedReports">0</strong>
+        </div>
+
+        <div class="stat-card danger">
+            <span>Active Alerts</span>
+            <strong id="activeAlerts">0</strong>
+        </div>
+
+        <div class="stat-card warning">
+            <span>Risk Observations</span>
+            <strong id="riskObservations">0</strong>
+        </div>
+
+    </section>
+
+    <!-- REPORT MANAGEMENT -->
+
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <div>
+                <h2>Disaster Reports</h2>
+                <p>Review, verify and manage citizen disaster reports.</p>
+            </div>
+
+            <button class="refresh-btn" onclick="loadDashboard()">
+                ↻ Refresh
+            </button>
+
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <!-- SEARCH + FILTER -->
+
+        <div class="toolbar">
+
+            <input
+                id="searchInput"
+                class="search-box"
+                type="search"
+                placeholder="🔎 Search ID, type, severity, status or location..."
+                oninput="applyFilters()"
+            >
+
+            <select
+                id="statusFilter"
+                class="filter-box"
+                onchange="applyFilters()"
+            >
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="verified">Verified</option>
+                <option value="rejected">Rejected</option>
+            </select>
+
+            <select
+                id="severityFilter"
+                class="filter-box"
+                onchange="applyFilters()"
+            >
+                <option value="all">All Severity</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+            </select>
+
+        </div>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Location</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="reportsTable">
+
+                    <tr>
+                        <td colspan="7" class="loading">
+                            Loading reports...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <!-- ALERT MANAGEMENT -->
+
+    <section class="panel alert-management">
+
+        <div class="panel-header">
+
+            <div>
+                <h2>🚨 Alert Management</h2>
+                <p>Create, monitor and manage disaster alerts.</p>
+            </div>
+
+            <button
+                class="refresh-btn"
+                onclick="loadAlerts()"
+            >
+                ↻ Refresh Alerts
+            </button>
+
+        </div>
+
+        <!-- ALERT STATISTICS -->
+
+        <div class="alert-stats">
+
+            <div class="alert-stat-card">
+                <span>Total Alerts</span>
+                <strong id="totalAlerts">0</strong>
+            </div>
+
+            <div class="alert-stat-card">
+                <span>Active</span>
+                <strong id="activeAlertCount">0</strong>
+            </div>
+
+            <div class="alert-stat-card">
+                <span>Inactive</span>
+                <strong id="inactiveAlertCount">0</strong>
+            </div>
+
+            <div class="alert-stat-card critical-stat">
+                <span>Critical Active</span>
+                <strong id="criticalAlertCount">0</strong>
+            </div>
+
+        </div>
+
+        <!-- CREATE BUTTON -->
+
+        <div class="alert-create-row">
+
+            <button
+                class="create-alert-btn"
+                onclick="openCreateAlertModal()"
+            >
+                + Create New Alert
+            </button>
+
+        </div>
+
+        <!-- SEARCH / FILTER -->
+
+        <div class="toolbar">
+
+            <input
+                id="alertSearch"
+                class="search-box"
+                type="search"
+                placeholder="🔎 Search alerts..."
+                oninput="applyAlertFilters()"
+            >
+
+            <select
+                id="alertStatusFilter"
+                class="filter-box"
+                onchange="applyAlertFilters()"
+            >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+
+            <select
+                id="alertSeverityFilter"
+                class="filter-box"
+                onchange="applyAlertFilters()"
+            >
+                <option value="all">All Severity</option>
+                <option value="low">Low</option>
+                <option value="moderate">Moderate</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+            </select>
+
+            <select
+                id="alertTypeFilter"
+                class="filter-box"
+                onchange="applyAlertFilters()"
+            >
+                <option value="all">All Types</option>
+            </select>
+
+        </div>
+
+        <!-- ALERT TABLE -->
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Location</th>
+                        <th>Expires</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="alertsTable">
+
+                    <tr>
+                        <td colspan="8" class="loading">
+                            Loading alerts...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- CREATE ALERT MODAL -->
+
+    <div
+        id="alertModal"
+        class="alert-modal"
+        style="display:none;"
+    >
+
+        <div class="alert-modal-content">
+
+            <div class="alert-modal-header">
+
+                <div>
+                    <h2>🚨 Create Disaster Alert</h2>
+                    <p>Create an alert for citizens and monitoring systems.</p>
+                </div>
+
+                <button
+                    type="button"
+                    class="modal-close"
+                    onclick="closeAlertModal()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="alert-form">
+
+                <label>
+                    Alert Title
+                    <input
+                        id="alertTitle"
+                        type="text"
+                        maxlength="200"
+                        placeholder="Example: Flood Warning"
+                    >
+                </label>
+
+
+                <label>
+                    Alert Message
+                    <textarea
+                        id="alertMessage"
+                        rows="4"
+                        placeholder="Enter detailed emergency instructions..."
+                    ></textarea>
+                </label>
+
+
+                <div class="form-grid">
+
+                    <label>
+                        Alert Type
+                        <input
+                            id="alertType"
+                            type="text"
+                            placeholder="Flood, Fire, Earthquake..."
+                        >
+                    </label>
+
+
+                    <label>
+                        Severity
+
+                        <select id="alertSeverity">
+
+                            <option value="low">
+                                Low
+                            </option>
+
+                            <option value="moderate" selected>
+                                Moderate
+                            </option>
+
+                            <option value="high">
+                                High
+                            </option>
+
+                            <option value="critical">
+                                Critical
+                            </option>
+
+                        </select>
+
+                    </label>
+
+                </div>
+
+
+                <div class="form-grid">
+
+                    <label>
+                        Latitude
+                        <input
+                            id="alertLatitude"
+                            type="number"
+                            step="any"
+                            placeholder="Optional"
+                        >
+                    </label>
+
+
+                    <label>
+                        Longitude
+                        <input
+                            id="alertLongitude"
+                            type="number"
+                            step="any"
+                            placeholder="Optional"
+                        >
+                    </label>
+
+                </div>
+
+
+                <div class="form-grid">
+
+                    <label>
+                        Radius (km)
+                        <input
+                            id="alertRadius"
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            placeholder="Optional"
+                        >
+                    </label>
+
+
+                    <label>
+                        Expiry
+                        <input
+                            id="alertExpires"
+                            type="datetime-local"
+                        >
+                    </label>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button
+                        type="button"
+                        class="cancel-btn"
+                        onclick="closeAlertModal()"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="button"
+                        class="create-alert-btn"
+                        onclick="createAlert()"
+                    >
+                        🚨 Create Alert
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- QUICK ACTIONS -->
+
+    <section class="quick-actions">
+
+        <a href="/api/gis/map">🗺️ GIS Dashboard</a>
+
+        <a href="/api/data/sources">📡 Data Sources</a>
+
+        <a href="/api/risk">📊 Risk Data</a>
+
+        <a href="/api/admin/reports">📋 Reports API</a>
+
+    </section>
+
+</main>
+
+</div>
+
+<!-- REPORT DETAILS MODAL -->
+
+<div id="reportModal" class="modal" onclick="closeModalOutside(event)">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <h2>Disaster Report Details</h2>
+
+            <button class="close-btn" onclick="closeReportModal()">
+                ×
+            </button>
+
+        </div>
+
+        <div id="reportDetails" class="modal-body"></div>
+
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/admin_dashboard.js') }}"></script>
+
+
+<footer class="site-footer">
+    <div class="footer-content">
+
+        <div class="footer-brand">
+            🛡️ <strong>DisasterShield AI</strong>
+        </div>
+
+        <p class="footer-description">
+            AI-Powered Disaster Management & Emergency Response Platform
+        </p>
+
+        <div class="footer-features">
+            Real-time Alerts • GIS Risk Mapping • Citizen Reporting • Emergency Assistance
+        </div>
+
+        <div class="footer-divider"></div>
+
+        <p class="footer-credit">
+            Design &amp; Deployed by <strong>~Amit</strong>
+        </p>
+
+        <p class="footer-copy">
+            © 2026 DisasterShield AI • SIH Project
+        </p>
+
+    </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>DisasterShield AI - GIS Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/map.css') }}"
+    >
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="brand">
+        <div class="brand-icon">🛡️</div>
+
+        <div>
+            <h1>DisasterShield AI</h1>
+            <p>Live Disaster Risk GIS Dashboard</p>
+        </div>
+    </div>
+
+    <a href="/citizen" class="back-btn">
+        ← Dashboard
+    </a>
+
+</header>
+
+
+<!-- RISK STATUS -->
+
+<section class="risk-banner" id="riskBanner">
+
+    <div class="risk-banner-icon" id="riskBannerIcon">
+        🛡️
+    </div>
+
+    <div>
+        <strong id="riskBannerTitle">
+            Checking Risk...
+        </strong>
+
+        <span id="riskBannerText">
+            Loading live disaster information
+        </span>
+    </div>
+
+</section>
+
+
+<!-- STATISTICS -->
+
+<section class="stats">
+
+    <div class="stat-card">
+        <div class="stat-icon blue">📡</div>
+
+        <div>
+            <span>Risk Observations</span>
+            <strong id="riskCount">0</strong>
+        </div>
+    </div>
+
+
+    <div class="stat-card">
+        <div class="stat-icon orange">📍</div>
+
+        <div>
+            <span>Verified Reports</span>
+            <strong id="reportCount">0</strong>
+        </div>
+    </div>
+
+
+    <div class="stat-card">
+        <div class="stat-icon red">🚨</div>
+
+        <div>
+            <span>Active Alerts</span>
+            <strong id="alertCount">0</strong>
+        </div>
+    </div>
+
+</section>
+
+
+<!-- MAP -->
+
+<main class="map-container">
+
+    <div id="map"></div>
+
+
+    <!-- MAP CONTROL -->
+
+    <div class="map-actions">
+
+        <button id="locateBtn" class="map-action">
+            📍 My Location
+        </button>
+
+        <button id="refreshBtn" class="map-action">
+            🔄 Refresh
+        </button>
+
+    </div>
+
+
+    <!-- LEGEND -->
+
+    <div class="legend">
+
+        <h3>Map Legend</h3>
+
+        <div>
+            <span class="legend-dot risk"></span>
+            Risk Observation
+        </div>
+
+        <div>
+            <span class="legend-dot report"></span>
+            Verified Report
+        </div>
+
+        <div>
+            <span class="legend-dot alert"></span>
+            Active Alert
+        </div>
+
+    </div>
+
+</main>
+
+
+<!-- NEARBY ALERT PANEL -->
+
+<section class="nearby-panel">
+
+    <div class="panel-header">
+        <h2>🚨 Nearby Emergency Alerts</h2>
+
+        <span id="nearbyCount">
+            0 nearby
+        </span>
+    </div>
+
+    <div id="nearbyAlerts">
+
+        <div class="empty">
+            Checking nearby alerts...
+        </div>
+
+    </div>
+
+</section>
+
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+<script
+    src="{{ url_for('static', filename='js/map.js') }}">
+</script>
+
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DisasterShield AI - Admin Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin_dashboard.css') }}"
+    >
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div>
+        <h1>DisasterShield AI</h1>
+        <p>Admin Control Dashboard</p>
+    </div>
+
+    <div class="admin-badge">
+        ADMIN
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <section class="welcome">
+        <div>
+            <h2>Disaster Management Overview</h2>
+            <p>
+                Monitor disaster reports, risk observations and active alerts.
+            </p>
+        </div>
+
+        <a href="/api/gis/map" class="map-btn">
+            🗺 Open GIS Map
+        </a>
+    </section>
+
+
+    <!-- STATISTICS -->
+
+    <section class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div>
+                <span>Total Reports</span>
+                <strong id="totalReports">0</strong>
+            </div>
+        </div>
+
+
+        <div class="stat-card pending">
+            <div class="stat-icon">⏳</div>
+            <div>
+                <span>Pending Reports</span>
+                <strong id="pendingReports">0</strong>
+            </div>
+        </div>
+
+
+        <div class="stat-card verified">
+            <div class="stat-icon">✅</div>
+            <div>
+                <span>Verified Reports</span>
+                <strong id="verifiedReports">0</strong>
+            </div>
+        </div>
+
+
+        <div class="stat-card rejected">
+            <div class="stat-icon">❌</div>
+            <div>
+                <span>Rejected Reports</span>
+                <strong id="rejectedReports">0</strong>
+            </div>
+        </div>
+
+
+        <div class="stat-card alert">
+            <div class="stat-icon">🚨</div>
+            <div>
+                <span>Active Alerts</span>
+                <strong id="activeAlerts">0</strong>
+            </div>
+        </div>
+
+
+        <div class="stat-card risk">
+            <div class="stat-icon">⚠️</div>
+            <div>
+                <span>Risk Observations</span>
+                <strong id="riskObservations">0</strong>
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- REPORT MANAGEMENT -->
+
+    <section class="panel">
+
+        <div class="panel-header">
+
+            <div>
+                <h2>Disaster Reports</h2>
+                <p>Review and manage citizen reports.</p>
+            </div>
+
+            <button
+                class="refresh-btn"
+                onclick="loadDashboard()"
+            >
+                ↻ Refresh
+            </button>
+
+        </div>
+
+
+        <div id="message"></div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Location</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="reportsTable">
+
+                    <tr>
+                        <td colspan="7" class="loading">
+                            Loading reports...
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- QUICK ACTIONS -->
+
+    <section class="quick-actions">
+
+        <a href="/api/gis/map">
+            🗺️ GIS Dashboard
+        </a>
+
+        <a href="/api/data/sources">
+            📡 Data Sources
+        </a>
+
+        <a href="/api/risk">
+            📊 Risk Data
+        </a>
+
+        <a href="/api/admin/reports">
+            📋 Reports API
+        </a>
+
+    </section>
+
+</main>
+
+
+<script
+    src="{{ url_for('static', filename='js/admin_dashboard.js') }}">
+</script>
+
+</body>
+</html>

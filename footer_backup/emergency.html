@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Emergency Response Center | DisasterShield AI</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/emergency.css') }}"
+    >
+
+</head>
+
+<body>
+
+<div class="emergency-app">
+
+
+    <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
+    <header class="emergency-header">
+
+        <div class="brand-area">
+
+            <div class="brand-icon">
+                🛡️
+            </div>
+
+            <div>
+
+                <h1>
+                    DisasterShield AI
+                </h1>
+
+                <p>
+                    Emergency Response Center
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <a
+            href="/citizen"
+            class="dashboard-btn"
+        >
+            ← Dashboard
+        </a>
+
+    </header>
+
+
+    <!-- =====================================================
+         EMERGENCY BANNER
+         ===================================================== -->
+
+    <section class="emergency-banner">
+
+        <div class="banner-icon">
+            🚨
+        </div>
+
+        <div class="banner-content">
+
+            <h2>
+                Emergency Assistance
+            </h2>
+
+            <p>
+                If there is immediate danger,
+                contact emergency services now.
+            </p>
+
+        </div>
+
+        <button
+            id="sosButton"
+            class="sos-button"
+        >
+            SOS
+        </button>
+
+    </section>
+
+
+    <!-- =====================================================
+         LOCATION
+         ===================================================== -->
+
+    <section class="location-card">
+
+        <div class="section-title">
+
+            <div>
+                <span class="eyebrow">
+                    LOCATION
+                </span>
+
+                <h2>
+                    📍 Your Emergency Location
+                </h2>
+
+            </div>
+
+            <span
+                id="locationBadge"
+                class="status-badge"
+            >
+                NOT DETECTED
+            </span>
+
+        </div>
+
+
+        <div class="location-info">
+
+            <div class="coordinate-box">
+
+                <span>
+                    Latitude
+                </span>
+
+                <strong id="latitude">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="coordinate-box">
+
+                <span>
+                    Longitude
+                </span>
+
+                <strong id="longitude">
+                    —
+                </strong>
+
+            </div>
+
+
+            <div class="coordinate-box">
+
+                <span>
+                    Accuracy
+                </span>
+
+                <strong id="accuracy">
+                    —
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="location-actions">
+
+            <button
+                id="locationButton"
+                class="primary-button"
+            >
+                📍 Detect My Location
+            </button>
+
+            <button
+                id="copyLocationButton"
+                class="secondary-button"
+                disabled
+            >
+                📋 Copy Coordinates
+            </button>
+
+        </div>
+
+
+        <div
+            id="locationMessage"
+            class="location-message"
+        >
+            Location is required for nearby emergency
+            facility search.
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         EMERGENCY SERVICES
+         ===================================================== -->
+
+    <section class="services-section">
+
+        <div class="section-title">
+
+            <div>
+
+                <span class="eyebrow">
+                    ONE-TAP HELP
+                </span>
+
+                <h2>
+                    📞 Emergency Services
+                </h2>
+
+                <p>
+                    Tap a service to call directly.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="services-grid">
+
+            {% for service in services %}
+
+            <article
+                class="service-card {{ service.priority }}"
+            >
+
+                <div class="service-icon">
+                    {{ service.icon }}
+                </div>
+
+                <div class="service-info">
+
+                    <h3>
+                        {{ service.name }}
+                    </h3>
+
+                    <p>
+                        {{ service.description }}
+                    </p>
+
+                    <strong class="service-number">
+                        {{ service.number }}
+                    </strong>
+
+                </div>
+
+                <a
+                    href="tel:{{ service.number }}"
+                    class="call-button"
+                >
+                    📞 Call
+                </a>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         NEARBY FACILITIES
+         ===================================================== -->
+
+    <section class="nearby-section">
+
+        <div class="section-title">
+
+            <div>
+
+                <span class="eyebrow">
+                    LOCATION SERVICES
+                </span>
+
+                <h2>
+                    🏥 Find Emergency Facilities
+                </h2>
+
+                <p>
+                    Use your location to search nearby
+                    emergency facilities.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="facility-grid">
+
+            <button
+                class="facility-card"
+                data-facility="hospital"
+            >
+                <span>🏥</span>
+                <strong>Hospitals</strong>
+                <small>Find nearby hospitals</small>
+            </button>
+
+
+            <button
+                class="facility-card"
+                data-facility="pharmacy"
+            >
+                <span>💊</span>
+                <strong>Pharmacies</strong>
+                <small>Find nearby pharmacies</small>
+            </button>
+
+
+            <button
+                class="facility-card"
+                data-facility="police"
+            >
+                <span>👮</span>
+                <strong>Police</strong>
+                <small>Find nearby police stations</small>
+            </button>
+
+
+            <button
+                class="facility-card"
+                data-facility="fire_station"
+            >
+                <span>🚒</span>
+                <strong>Fire Stations</strong>
+                <small>Find nearby fire stations</small>
+            </button>
+
+
+            <button
+                class="facility-card"
+                data-facility="shelter"
+            >
+                <span>🏠</span>
+                <strong>Emergency Shelters</strong>
+                <small>Find nearby shelters</small>
+            </button>
+
+
+            <button
+                class="facility-card navigation-card"
+                data-facility="navigation"
+            >
+                <span>🧭</span>
+                <strong>Open Map</strong>
+                <small>View your location</small>
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         DISASTER GUIDES
+         ===================================================== -->
+
+    <section class="guides-section">
+
+        <div class="section-title">
+
+            <div>
+
+                <span class="eyebrow">
+                    SURVIVAL GUIDANCE
+                </span>
+
+                <h2>
+                    🧭 Disaster Safety Guides
+                </h2>
+
+                <p>
+                    Quick actions for common disasters.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="guide-tabs">
+
+            {% for key, guide in guides.items() %}
+
+            <button
+                class="guide-tab {% if loop.first %}active{% endif %}"
+                data-guide="{{ key }}"
+            >
+                {{ guide.icon }}
+                {{ guide.title }}
+            </button>
+
+            {% endfor %}
+
+        </div>
+
+
+        <div
+            id="guideContainer"
+            class="guide-container"
+        >
+
+            {% for key, guide in guides.items() %}
+
+            <article
+                class="guide-panel {% if loop.first %}active{% endif %}"
+                data-guide-panel="{{ key }}"
+            >
+
+                <div class="guide-heading">
+
+                    <span>
+                        {{ guide.icon }}
+                    </span>
+
+                    <div>
+
+                        <h3>
+                            {{ guide.title }}
+                        </h3>
+
+                        <p>
+                            Follow official emergency
+                            instructions whenever available.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="guide-columns">
+
+                    <div class="guide-column">
+
+                        <h4>
+                            🟢 BEFORE
+                        </h4>
+
+                        <ul>
+
+                            {% for item in guide.before %}
+
+                            <li>
+                                {{ item }}
+                            </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    </div>
+
+
+                    <div class="guide-column urgent">
+
+                        <h4>
+                            🔴 DURING
+                        </h4>
+
+                        <ul>
+
+                            {% for item in guide.during %}
+
+                            <li>
+                                {{ item }}
+                            </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    </div>
+
+
+                    <div class="guide-column">
+
+                        <h4>
+                            🔵 AFTER
+                        </h4>
+
+                        <ul>
+
+                            {% for item in guide.after %}
+
+                            <li>
+                                {{ item }}
+                            </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         EMERGENCY CHECKLIST
+         ===================================================== -->
+
+    <section class="checklist-section">
+
+        <div class="section-title">
+
+            <div>
+
+                <span class="eyebrow">
+                    PREPAREDNESS
+                </span>
+
+                <h2>
+                    🎒 Emergency Checklist
+                </h2>
+
+                <p>
+                    Mark the items you have prepared.
+                </p>
+
+            </div>
+
+            <span
+                id="checklistProgress"
+                class="progress-badge"
+            >
+                0 / {{ checklist|length }}
+            </span>
+
+        </div>
+
+
+        <div class="checklist-grid">
+
+            {% for item in checklist %}
+
+            <label class="checklist-item">
+
+                <input
+                    type="checkbox"
+                    data-check-item="{{ item.id }}"
+                >
+
+                <span class="checkmark">
+                </span>
+
+                <span class="checklist-icon">
+                    {{ item.icon }}
+                </span>
+
+                <span class="checklist-content">
+
+                    <strong>
+                        {{ item.title }}
+                    </strong>
+
+                    <small>
+                        {{ item.description }}
+                    </small>
+
+                </span>
+
+            </label>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         SAFETY NOTICE
+         ===================================================== -->
+
+    <section class="safety-notice">
+
+        <div class="notice-icon">
+            ⚠️
+        </div>
+
+        <div>
+
+            <h3>
+                Important
+            </h3>
+
+            <p>
+                This Emergency Response Center provides
+                general preparedness and navigation assistance.
+                It does not replace instructions from police,
+                fire services, disaster-management authorities,
+                medical professionals or local government.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         FOOTER
+         ===================================================== -->
+
+    <footer>
+
+        <strong>
+            🛡️ DisasterShield AI
+        </strong>
+
+        <span>
+            Emergency Response Center
+        </span>
+
+        <span>
+            Created for disaster preparedness & response
+        </span>
+
+    </footer>
+
+
+</div>
+
+
+<script
+    src="{{ url_for('static', filename='js/emergency.js') }}"
+></script>
+
+</body>
+</html>

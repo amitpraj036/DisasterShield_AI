@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Disaster - DisasterShield AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+        }
+
+        .header {
+            background: #172b4d;
+            color: white;
+            padding: 18px 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            opacity: .85;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 0 16px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(0,0,0,.08);
+        }
+
+        label {
+            display: block;
+            margin: 16px 0 7px;
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccd3df;
+            border-radius: 9px;
+            font-size: 15px;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .location-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #1769e0;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        .location-btn {
+            margin-top: 10px;
+            background: #198754;
+        }
+
+        .message {
+            display: none;
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 9px;
+        }
+
+        .success {
+            display: block;
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .error {
+            display: block;
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 18px;
+            color: #1769e0;
+            text-decoration: none;
+        }
+
+        @media (max-width: 600px) {
+            .location-row {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+
+<style>
+.site-footer {
+    margin-top: 40px;
+    background: #0f172a;
+    color: #cbd5e1;
+    padding: 30px 20px;
+    text-align: center;
+    border-top: 1px solid #334155;
+}
+
+.footer-content {
+    max-width: 1100px;
+    margin: auto;
+}
+
+.footer-brand {
+    color: white;
+    font-size: 19px;
+    margin-bottom: 8px;
+}
+
+.site-footer p {
+    margin: 7px 0;
+    font-size: 13px;
+}
+
+.footer-description {
+    color: #94a3b8;
+}
+
+.footer-features {
+    margin-top: 12px;
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.footer-divider {
+    width: 80px;
+    height: 1px;
+    background: #475569;
+    margin: 18px auto;
+}
+
+.footer-credit {
+    color: #e2e8f0 !important;
+    font-size: 14px !important;
+}
+
+.footer-credit strong {
+    color: white;
+}
+
+.footer-copy {
+    color: #64748b !important;
+    font-size: 11px !important;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+    <h1>🚨 DisasterShield AI</h1>
+    <p>Citizen Disaster Reporting</p>
+</div>
+
+<div class="container">
+
+    <div class="card">
+
+        <h2>Report a Disaster</h2>
+        <p>
+            Submit accurate information about a disaster or dangerous situation.
+        </p>
+
+        <form id="reportForm">
+
+            <label for="disaster_type">Disaster Type</label>
+
+            <select id="disaster_type" required>
+                <option value="">Select disaster type</option>
+                <option value="flood">Flood</option>
+                <option value="landslide">Landslide</option>
+                <option value="earthquake">Earthquake</option>
+                <option value="fire">Fire</option>
+                <option value="cyclone">Cyclone</option>
+                <option value="storm">Storm</option>
+                <option value="drought">Drought</option>
+                <option value="other">Other</option>
+            </select>
+
+            <label for="severity">Severity</label>
+
+            <select id="severity" required>
+                <option value="moderate">Moderate</option>
+                <option value="low">Low</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+            </select>
+
+            <label for="description">Description</label>
+
+            <textarea
+                id="description"
+                placeholder="Describe what happened, location details, visible danger, rainfall, damage etc."
+                required
+            ></textarea>
+
+            <label>Location</label>
+
+            <div class="location-row">
+                <input
+                    type="number"
+                    id="latitude"
+                    step="any"
+                    placeholder="Latitude"
+                    required
+                >
+
+                <input
+                    type="number"
+                    id="longitude"
+                    step="any"
+                    placeholder="Longitude"
+                    required
+                >
+            </div>
+
+            <button
+                type="button"
+                class="location-btn"
+                id="locationBtn"
+            >
+                📍 Get My Current Location
+            </button>
+
+            <button
+                type="submit"
+                id="submitBtn"
+            >
+                🚨 Submit Disaster Report
+            </button>
+
+        </form>
+
+        <div id="message" class="message"></div>
+
+        <a href="/" class="back">← Back to Home</a>
+
+    </div>
+
+</div>
+
+<script>
+
+const form = document.getElementById("reportForm");
+const message = document.getElementById("message");
+const submitBtn = document.getElementById("submitBtn");
+const locationBtn = document.getElementById("locationBtn");
+
+function showMessage(text, type) {
+    message.textContent = text;
+    message.className = "message " + type;
+}
+
+locationBtn.addEventListener("click", function () {
+
+    if (!navigator.geolocation) {
+        showMessage("Geolocation is not supported by this browser.", "error");
+        return;
+    }
+
+    locationBtn.disabled = true;
+    locationBtn.textContent = "📍 Getting location...";
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+
+            document.getElementById("latitude").value =
+                position.coords.latitude.toFixed(6);
+
+            document.getElementById("longitude").value =
+                position.coords.longitude.toFixed(6);
+
+            locationBtn.disabled = false;
+            locationBtn.textContent = "📍 Location Captured";
+
+            showMessage("Location captured successfully.", "success");
+        },
+
+        function(error) {
+
+            locationBtn.disabled = false;
+            locationBtn.textContent = "📍 Get My Current Location";
+
+            showMessage(
+                "Unable to get location. Please enter latitude and longitude manually.",
+                "error"
+            );
+        }
+    );
+});
+
+form.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const disaster_type =
+        document.getElementById("disaster_type").value;
+
+    const description =
+        document.getElementById("description").value.trim();
+
+    const severity =
+        document.getElementById("severity").value;
+
+    const latitude =
+        document.getElementById("latitude").value;
+
+    const longitude =
+        document.getElementById("longitude").value;
+
+    if (!disaster_type) {
+        showMessage("Please select a disaster type.", "error");
+        return;
+    }
+
+    if (description.length < 10) {
+        showMessage(
+            "Description must contain at least 10 characters.",
+            "error"
+        );
+        return;
+    }
+
+    if (!latitude || !longitude) {
+        showMessage(
+            "Please provide your location.",
+            "error"
+        );
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
+
+    try {
+
+        const response = await fetch("/api/reports", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            credentials: "same-origin",
+
+            body: JSON.stringify({
+                disaster_type: disaster_type,
+                description: description,
+                severity: severity,
+                latitude: Number(latitude),
+                longitude: Number(longitude)
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message || "Failed to submit report."
+            );
+        }
+
+        showMessage(
+            "✅ Report submitted successfully. Report ID: " +
+            data.report.id +
+            ". Status: " +
+            data.report.status,
+            "success"
+        );
+
+        form.reset();
+
+    } catch (error) {
+
+        showMessage(
+            "❌ " + error.message,
+            "error"
+        );
+
+    } finally {
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = "🚨 Submit Disaster Report";
+    }
+
+});
+
+</script>
+
+
+<footer class="site-footer">
+    <div class="footer-content">
+
+        <div class="footer-brand">
+            🛡️ <strong>DisasterShield AI</strong>
+        </div>
+
+        <p class="footer-description">
+            AI-Powered Disaster Management & Emergency Response Platform
+        </p>
+
+        <div class="footer-features">
+            Real-time Alerts • GIS Risk Mapping • Citizen Reporting • Emergency Assistance
+        </div>
+
+        <div class="footer-divider"></div>
+
+        <p class="footer-credit">
+            Design &amp; Deployed by <strong>~Amit</strong>
+        </p>
+
+        <p class="footer-copy">
+            © 2026 DisasterShield AI • SIH Project
+        </p>
+
+    </div>
+</footer>
+
+</body>
+</html>

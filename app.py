@@ -12,6 +12,7 @@ from routes.data import data_bp
 from routes.admin import admin_bp
 from routes.gis import gis_bp
 from routes.emergency import emergency_bp
+from routes.safety import safety_bp
 
 
 def create_app():
@@ -34,6 +35,7 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(gis_bp)
     app.register_blueprint(emergency_bp)
+    app.register_blueprint(safety_bp)
 
     @app.route("/")
     def home():

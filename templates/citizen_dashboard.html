@@ -289,7 +289,98 @@
         .live-alert-meta { margin-top: 8px; font-size: 12px; opacity: .9; }
         .alert-time { color: #64748b; font-size: 12px; }
 
-    </style>
+    
+        .safety-panel {
+            border: 1px solid #dbeafe;
+            background: linear-gradient(135deg, #ffffff, #f8fbff);
+        }
+
+        .safety-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .safety-header h2 {
+            margin-bottom: 7px;
+        }
+
+        .safety-header p {
+            margin: 0;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .safety-badge {
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .safety-badge.off {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .safety-badge.on {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .safety-badge.danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .safety-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .safety-disable-btn {
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #334155;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .safety-danger-box {
+            margin-top: 15px;
+            padding: 14px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .safety-danger-box.danger {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .safety-danger-box.safe {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        @media (max-width: 600px) {
+            .safety-header {
+                flex-direction: column;
+            }
+        }
+</style>
 
 <style>
 .site-footer {
@@ -400,6 +491,31 @@
 </header>
 
 <main class="container">
+
+    <!-- LOCATION-BASED SAFETY ALERTS -->
+    <section class="panel safety-panel">
+        <div class="safety-header">
+            <div>
+                <h2>📍 Location-Based Safety Alerts</h2>
+                <p id="safetyStatus">Enable this feature to receive automatic warnings when your shared location enters an active danger zone.</p>
+            </div>
+            <span id="safetyBadge" class="safety-badge off">OFF</span>
+        </div>
+
+        <div class="safety-actions">
+            <button id="safetyToggleBtn" class="action-btn" type="button" onclick="enableSafetyAlerts()">
+                📍 Enable Safety Alerts
+            </button>
+            <button id="safetyDisableBtn" class="safety-disable-btn" type="button" onclick="disableSafetyAlerts()" style="display:none;">
+                Disable
+            </button>
+        </div>
+
+        <div id="safetyDangerBox" class="safety-danger-box" aria-live="assertive">
+            <strong id="safetyDangerTitle">No danger zone detected</strong>
+            <span id="safetyDangerText">Your location will be checked only after you enable safety alerts.</span>
+        </div>
+    </section>
 
     <section class="welcome">
         <h2>Welcome, {{ user.name }} 👋</h2>
@@ -893,9 +1009,236 @@ function escapeHtml(value) {
 }
 
 
+
+let safetyWatchId = null;
+let safetyEnabled = false;
+const SAFETY_NOTIFICATION_PREFIX = "disastershield-safety-";
+
+function setSafetyUI(enabled, danger = false) {
+    const badge = document.getElementById("safetyBadge");
+    const status = document.getElementById("safetyStatus");
+    const enableBtn = document.getElementById("safetyToggleBtn");
+    const disableBtn = document.getElementById("safetyDisableBtn");
+
+    if (!badge || !status || !enableBtn || !disableBtn) return;
+
+    if (!enabled) {
+        badge.textContent = "OFF";
+        badge.className = "safety-badge off";
+        status.textContent = "Enable this feature to receive automatic warnings when your shared location enters an active danger zone.";
+        enableBtn.style.display = "inline-block";
+        disableBtn.style.display = "none";
+        return;
+    }
+
+    badge.textContent = danger ? "DANGER" : "ON";
+    badge.className = danger ? "safety-badge danger" : "safety-badge on";
+    status.textContent = danger
+        ? "You are currently within an active high/critical alert zone."
+        : "Safety alerts are active. Your latest shared location is being checked for nearby danger zones.";
+    enableBtn.style.display = "none";
+    disableBtn.style.display = "inline-block";
+}
+
+function showSafetyDanger(alerts) {
+    const box = document.getElementById("safetyDangerBox");
+    const title = document.getElementById("safetyDangerTitle");
+    const text = document.getElementById("safetyDangerText");
+    if (!box || !title || !text) return;
+
+    if (!alerts || alerts.length === 0) {
+        box.className = "safety-danger-box safe";
+        title.textContent = "✅ No danger zone detected";
+        text.textContent = "No active high or critical alert zone was detected around your latest location.";
+        return;
+    }
+
+    const top = alerts.find(a => a.severity === "critical") || alerts[0];
+    box.className = "safety-danger-box danger";
+    title.textContent = `🚨 ${top.severity.toUpperCase()}: ${top.title}`;
+    text.textContent = `Approx. ${Number(top.distance_km).toFixed(2)} km from the alert center. ${top.message}`;
+}
+
+async function postSafetyLocation(position) {
+    if (!safetyEnabled) return;
+
+    try {
+        const response = await fetch("/api/safety/location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.status === 401) {
+            window.location.href = "/citizen/login";
+            return;
+        }
+
+        if (!result.success) {
+            console.warn("Safety location check failed:", result.message);
+            return;
+        }
+
+        const alerts = result.alerts || [];
+        setSafetyUI(true, alerts.length > 0);
+        showSafetyDanger(alerts);
+
+        alerts.forEach(alert => {
+            maybeShowBrowserSafetyNotification(alert);
+        });
+    } catch (error) {
+        console.warn("Safety location error:", error);
+    }
+}
+
+function startSafetyLocationWatch() {
+    if (!navigator.geolocation) {
+        alert("This browser does not support location services.");
+        return false;
+    }
+
+    if (safetyWatchId !== null) {
+        navigator.geolocation.clearWatch(safetyWatchId);
+    }
+
+    safetyWatchId = navigator.geolocation.watchPosition(
+        postSafetyLocation,
+        error => {
+            console.warn("Location permission/error:", error);
+            const status = document.getElementById("safetyStatus");
+            if (status) status.textContent = "Location access is required for automatic danger-zone checks. Please allow location access in your browser settings.";
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
+    );
+
+    return true;
+}
+
+async function enableSafetyAlerts() {
+    if (!navigator.geolocation) {
+        alert("This browser does not support location services.");
+        return;
+    }
+
+    const button = document.getElementById("safetyToggleBtn");
+    if (button) {
+        button.disabled = true;
+        button.textContent = "📍 Requesting location...";
+    }
+
+    try {
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            });
+        });
+
+        safetyEnabled = true;
+
+        const firstResponse = await fetch("/api/safety/location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            })
+        });
+
+        const firstResult = await firstResponse.json();
+        if (!firstResult.success) throw new Error(firstResult.message || "Unable to enable safety alerts");
+
+        setSafetyUI(true, (firstResult.alerts || []).length > 0);
+        showSafetyDanger(firstResult.alerts || []);
+        (firstResult.alerts || []).forEach(maybeShowBrowserSafetyNotification);
+
+        if ("Notification" in window && Notification.permission === "default") {
+            try { await Notification.requestPermission(); } catch (_) {}
+        }
+
+        startSafetyLocationWatch();
+    } catch (error) {
+        safetyEnabled = false;
+        console.warn("Unable to enable safety alerts:", error);
+        alert("Location permission is needed to enable automatic safety alerts.");
+        setSafetyUI(false);
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.textContent = "📍 Enable Safety Alerts";
+        }
+    }
+}
+
+async function disableSafetyAlerts() {
+    try {
+        await fetch("/api/safety/preferences", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tracking_enabled: false })
+        });
+    } catch (error) {
+        console.warn("Unable to update safety preference:", error);
+    }
+
+    safetyEnabled = false;
+    if (safetyWatchId !== null && navigator.geolocation) {
+        navigator.geolocation.clearWatch(safetyWatchId);
+        safetyWatchId = null;
+    }
+    setSafetyUI(false);
+    showSafetyDanger([]);
+}
+
+async function initSafetyAlerts() {
+    try {
+        const response = await fetch("/api/safety/preferences");
+        if (response.status === 401) return;
+        const result = await response.json();
+
+        if (result.success && result.tracking_enabled) {
+            safetyEnabled = true;
+            setSafetyUI(true, false);
+            startSafetyLocationWatch();
+        } else {
+            setSafetyUI(false);
+        }
+    } catch (error) {
+        console.warn("Safety preferences error:", error);
+    }
+}
+
+function maybeShowBrowserSafetyNotification(alert) {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+    const key = SAFETY_NOTIFICATION_PREFIX + alert.id;
+    const last = Number(localStorage.getItem(key) || 0);
+    const now = Date.now();
+    if (now - last < 6 * 60 * 60 * 1000) return;
+
+    try {
+        new Notification(`🚨 ${String(alert.severity || "").toUpperCase()} Safety Alert`, {
+            body: `${alert.title} • ${Number(alert.distance_km).toFixed(2)} km away`,
+            tag: `disastershield-alert-${alert.id}`
+        });
+        localStorage.setItem(key, String(now));
+    } catch (error) {
+        console.warn("Browser notification error:", error);
+    }
+}
+
 loadProfile();
 loadAlerts();
 loadReports();
+initSafetyAlerts();
 
 setInterval(loadAlerts, 15000);
 

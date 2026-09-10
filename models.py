@@ -396,3 +396,77 @@ class EmailVerification(db.Model):
 
     def __repr__(self):
         return f"<EmailVerification {self.email}>"
+
+class CitizenLocation(db.Model):
+    __tablename__ = "citizen_locations"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id"),
+        nullable=False,
+        unique=True,
+        index=True
+    )
+
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    accuracy_m = db.Column(db.Float, nullable=True)
+    tracking_enabled = db.Column(db.Boolean, nullable=False, default=False)
+    updated_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+        index=True
+    )
+
+    user = db.relationship("User", backref=db.backref("citizen_location", uselist=False))
+
+    def __repr__(self):
+        return f"<CitizenLocation user={self.user_id}>"
+
+
+class SafetyAlertEvent(db.Model):
+    __tablename__ = "safety_alert_events"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("users.id"),
+        nullable=False,
+        index=True
+    )
+
+    alert_id = db.Column(
+        db.Integer,
+        db.ForeignKey("alerts.id"),
+        nullable=False,
+        index=True
+    )
+
+    distance_km = db.Column(db.Float, nullable=False)
+    email_sent = db.Column(db.Boolean, nullable=False, default=False)
+    notified_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False,
+        index=True
+    )
+
+    user = db.relationship("User")
+    alert = db.relationship("Alert")
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "user_id",
+            "alert_id",
+            name="uq_safety_alert_event_user_alert"
+        ),
+    )
+
+    def __repr__(self):
+        return f"<SafetyAlertEvent user={self.user_id} alert={self.alert_id}>"
+

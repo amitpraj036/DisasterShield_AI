@@ -1,7 +1,12 @@
 .env
-.venv/
-__pycache__/
 *.pyc
-cookies.txt
-*_cookies.txt
-browser_test.txt
+__pycache__/
+venv/
+.venv/
+*.log
+*.before_emergency
+footer_backup/
+routes.before_emergency/
+templates.before_emergency/
+*.backup
+*_backup.html

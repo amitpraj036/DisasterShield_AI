@@ -23,8 +23,7 @@
             position: relative;
         }
 
-
-          .card {
+        .card {
             width: 100%;
             max-width: 420px;
             background: white;
@@ -32,8 +31,8 @@
             border-radius: 18px;
             box-shadow: 0 20px 50px rgba(0,0,0,.25);
             position: relative;
-            z-index:2;
-       }
+            z-index: 2;
+        }
 
         h1 {
             margin: 0 0 8px;
@@ -88,8 +87,11 @@
 
         .register {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 16px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
             color: #64748b;
+            font-size: 14px;
         }
 
         a {
@@ -97,148 +99,165 @@
             font-weight: bold;
             text-decoration: none;
         }
-    
-        .site-footer {
-            width: 100%;
-            max-width: 1200px;
-            margin-top: auto;
-            padding: 18px 20px;
+
+        .navigation {
             text-align: center;
-            color: rgba(255,255,255,.75);
-            font-size: 13px;
-            line-height: 1.6;
+            margin-top: 16px;
         }
 
-        .site-footer strong {
-            color: white;
+        .navigation a {
+            margin: 0 8px;
+            font-size: 14px;
         }
 
+        /* Footer */
         .site-footer {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
 
-    width: 100%;
-    min-height: 62px;
-
-    background: rgba(15, 23, 42, 0.96);
-    color: #cbd5e1;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    text-align: center;
-    padding: 10px 20px;
-
-    border-radius: 0;
-    box-shadow: 0 -4px 15px rgba(0,0,0,.18);
-
-    z-index: 10;
-}
-
-.site-footer div {
-    line-height: 1.4;
-}
-
-.site-footer strong {
-    color: white;
-}
-
-.site-footer .creator {
-    margin-top: 3px;
-    font-size: 12px;
-    color: #94a3b8;
-}
- 
-    </style>
-
-<style>
-.site-footer {
-    margin-top: 40px;
-    background: #0f172a;
-    color: #cbd5e1;
-    padding: 30px 20px;
-    text-align: center;
-    border-top: 1px solid #334155;
-}
-
-.footer-content {
-    max-width: 1100px;
-    margin: auto;
-}
-
-.footer-brand {
-    color: white;
-    font-size: 19px;
-    margin-bottom: 8px;
-}
-
-.site-footer p {
-    margin: 7px 0;
-    font-size: 13px;
-}
-
-.footer-description {
-    color: #94a3b8;
-}
-
-.footer-features {
-    margin-top: 12px;
-    color: #94a3b8;
-    font-size: 12px;
-    line-height: 1.7;
-}
-
-.footer-divider {
-    width: 80px;
-    height: 1px;
-    background: #475569;
-    margin: 18px auto;
-}
-
-.footer-credit {
-    color: #e2e8f0 !important;
-    font-size: 14px !important;
-}
-
-.footer-credit strong {
-    color: white;
-}
-
-.footer-copy {
-    color: #64748b !important;
-    font-size: 11px !important;
-}
-
-        .site-footer {
             width: 100%;
-            max-width: 1200px;
-            margin-top: auto;
-            padding: 18px 20px;
+            min-height: 58px;
+
+            background: rgba(15, 23, 42, 0.96);
+            color: #cbd5e1;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             text-align: center;
-            color: rgba(255,255,255,.75);
-            font-size: 13px;
-            line-height: 1.6;
+            padding: 8px 15px;
+
+            border-radius: 0;
+            box-shadow: 0 -4px 15px rgba(0,0,0,.18);
+
+            z-index: 10;
         }
 
-        .site-footer strong {
+        .footer-content {
+            width: 100%;
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .footer-brand {
             color: white;
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .site-footer p {
+            margin: 3px 0;
+            font-size: 11px;
+        }
+
+        .footer-description,
+        .footer-features {
+            display: none;
+        }
+
+        .footer-divider {
+            display: none;
+        }
+
+        .footer-credit {
+            color: #e2e8f0 !important;
+            font-size: 11px !important;
+        }
+
+        .footer-copy {
+            color: #64748b !important;
+            font-size: 9px !important;
+        }
+
+        /* Mobile screen optimization */
+        @media (max-width: 600px) {
+
+            body {
+                min-height: 100svh;
+                padding: 12px;
+                padding-top: 18px;
+                padding-bottom: 78px;
+                align-items: flex-start;
+            }
+
+            .card {
+                max-width: 100%;
+                padding: 20px;
+                border-radius: 14px;
+                margin-top: 5px;
+            }
+
+            h1 {
+                font-size: 23px;
+                margin-bottom: 5px;
+            }
+
+            .subtitle {
+                font-size: 13px;
+                margin-bottom: 13px;
+            }
+
+            label {
+                margin: 9px 0 5px;
+                font-size: 14px;
+            }
+
+            input {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            button {
+                margin-top: 15px;
+                padding: 11px;
+                font-size: 15px;
+            }
+
+            #message {
+                margin-top: 10px;
+                padding: 8px;
+                font-size: 13px;
+            }
+
+            .navigation {
+                margin-top: 13px;
+            }
+
+            .navigation a {
+                margin: 0 5px;
+                font-size: 13px;
+            }
+
+            .register {
+                margin-top: 12px;
+                padding-top: 12px;
+                padding-bottom: 3px;
+                font-size: 13px;
+            }
+
+            .site-footer {
+                min-height: 55px;
+                padding: 6px 10px;
+            }
+
+            .footer-brand {
+                font-size: 14px;
+            }
+
+            .footer-credit {
+                font-size: 10px !important;
+            }
+
+            .footer-copy {
+                font-size: 8px !important;
+            }
         }
 
     </style>
-
 </head>
-
-<footer class="site-footer">
-    <div>
-        <strong>🛡️ DisasterShield AI</strong>
-        <br>
-        <span>Citizen Emergency & Disaster Management Portal</span>
-        <div class="creator">Design &amp; Deployed by ~Amit</div>
-    </div>
-</footer>
 
 <body>
 
@@ -266,6 +285,7 @@
         <input
             type="password"
             id="password"
+            
             placeholder="Enter your password"
             required
         >
@@ -277,93 +297,33 @@
     </form>
 
     <div id="message"></div>
-<div style="text-align:center; margin-top:22px; padding-top:18px; border-top:1px solid #e5e7eb;">
-    <a href="/" style="margin:0 8px;">
-        🏠 Home
-    </a>
 
-    <a href="/admin/login" style="margin:0 8px;">
-        🛡️ Admin Login
-    </a>
-</div> 
+    <div class="navigation">
+
+        <a href="/">
+            🏠 Home
+        </a>
+
+        <a href="/admin/login">
+            🛡️ Admin Login
+        </a>
+
+    </div>
 
     <div class="register">
+
         Don't have an account?
         <a href="/citizen/register">Create account</a>
+
     </div>
 
 </div>
 
-<script>
 
-document.getElementById("loginForm").addEventListener(
-    "submit",
-    async function(event) {
-
-        event.preventDefault();
-
-        const message =
-            document.getElementById("message");
-
-        message.style.display = "none";
-
-        try {
-
-            const response = await fetch(
-                "/api/auth/login",
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        email:
-                            document.getElementById("email")
-                            .value.trim(),
-
-                        password:
-                            document.getElementById("password")
-                            .value
-                    })
-                }
-            );
-
-            const result =
-                await response.json();
-
-            if (!result.success) {
-
-                throw new Error(
-                    result.message ||
-                    "Login failed"
-                );
-            }
-
-            if (result.user.role !== "citizen") {
-
-                throw new Error(
-                    "This login is for citizens only."
-                );
-            }
-
-            window.location.href = "/citizen";
-
-        } catch (error) {
-
-            message.textContent =
-                error.message;
-
-            message.className = "error";
-        }
-    }
-);
-
-</script>
-
+<!-- Footer -->
 
 <footer class="site-footer">
+
     <div class="footer-content">
 
         <div class="footer-brand">
@@ -389,7 +349,162 @@ document.getElementById("loginForm").addEventListener(
         </p>
 
     </div>
+
 </footer>
+
+
+<script>
+
+document.getElementById("loginForm").addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const message =
+            document.getElementById("message");
+
+        message.style.display = "none";
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/auth/login",
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify({
+
+                            email:
+                                document
+                                .getElementById("email")
+                                .value
+                                .trim(),
+
+                            password:
+                                document
+                                .getElementById("password")
+                                .value
+
+                        })
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            if (!result.success) {
+
+                throw new Error(
+                    result.message ||
+                    "Login failed"
+                );
+
+            }
+
+            if (result.user.role !== "citizen") {
+
+                throw new Error(
+                    "This login is for citizens only."
+                );
+
+            }
+
+            window.location.href =
+                "/citizen";
+
+        } catch (error) {
+
+            message.textContent =
+                error.message;
+
+            message.className =
+                "error";
+
+        }
+
+    }
+);
+
+</script>
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    setupPasswordEye("password");
+});
+
+function setupPasswordEye(id) {
+    const input = document.getElementById(id);
+    if (!input || input.dataset.eyeReady === "true") return;
+
+    const wrapper = document.createElement("span");
+
+    wrapper.style.position = "relative";
+    wrapper.style.display = "block";
+    wrapper.style.width = "100%";
+
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+
+    input.style.width = "100%";
+    input.style.boxSizing = "border-box";
+    input.style.paddingRight = "48px";
+
+    const eye = document.createElement("button");
+
+    eye.type = "button";
+    eye.innerHTML = "👁️";
+    eye.setAttribute("aria-label", "Show password");
+
+    Object.assign(eye.style, {
+        position: "absolute",
+        right: "8px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        width: "34px",
+        height: "34px",
+        padding: "0",
+        margin: "0",
+        border: "0",
+        outline: "none",
+        background: "transparent",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "18px",
+        lineHeight: "1",
+        zIndex: "10"
+    });
+
+    eye.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (input.type === "password") {
+            input.type = "text";
+            eye.innerHTML = "🙈";
+            eye.setAttribute("aria-label", "Hide password");
+        } else {
+            input.type = "password";
+            eye.innerHTML = "👁️";
+            eye.setAttribute("aria-label", "Show password");
+        }
+    });
+
+    wrapper.appendChild(eye);
+    input.dataset.eyeReady = "true";
+}
+</script>
 
 </body>
 </html>

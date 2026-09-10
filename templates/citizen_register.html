@@ -1,335 +1,849 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Citizen Registration - DisasterShield AI</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #0f172a, #1e3a5f);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .card {
-            width: 100%;
-            max-width: 430px;
-            background: white;
-            padding: 30px;
-            border-radius: 18px;
-            box-shadow: 0 20px 50px rgba(0,0,0,.25);
-        }
-
-        h1 {
-            margin: 0 0 8px;
-            color: #0f172a;
-        }
-
-        .subtitle {
-            color: #64748b;
-            margin-bottom: 25px;
-        }
-
-        label {
-            display: block;
-            margin: 15px 0 7px;
-            font-weight: bold;
-            color: #334155;
-        }
-
-        input {
-            width: 100%;
-            padding: 13px;
-            border: 1px solid #cbd5e1;
-            border-radius: 9px;
-            font-size: 15px;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-
-        button {
-            width: 100%;
-            margin-top: 22px;
-            padding: 14px;
-            border: none;
-            border-radius: 9px;
-            background: #2563eb;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:disabled {
-            opacity: .6;
-        }
-
-        #message {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 8px;
-            display: none;
-        }
-
-        .error {
-            display: block !important;
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .success {
-            display: block !important;
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .login {
-            text-align: center;
-            margin-top: 20px;
-            color: #64748b;
-        }
-
-        a {
-            color: #2563eb;
-            font-weight: bold;
-            text-decoration: none;
-        }
-    </style>
 
 <style>
-.site-footer {
-    margin-top: 40px;
-    background: #0f172a;
-    color: #cbd5e1;
-    padding: 30px 20px;
-    text-align: center;
-    border-top: 1px solid #334155;
-}
+    * {
+        box-sizing: border-box;
+    }
 
-.footer-content {
-    max-width: 1100px;
-    margin: auto;
-}
+    .register-page {
+        min-height: calc(100vh - 150px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 30px 16px;
+    }
 
-.footer-brand {
-    color: white;
-    font-size: 19px;
-    margin-bottom: 8px;
-}
+    .register-card {
+        width: 100%;
+        max-width: 470px;
+        background: rgba(255,255,255,0.97);
+        border-radius: 22px;
+        padding: 30px;
+        box-shadow: 0 15px 45px rgba(0,0,0,0.12);
+    }
 
-.site-footer p {
-    margin: 7px 0;
-    font-size: 13px;
-}
+    .register-card h1 {
+        margin: 0 0 8px;
+        text-align: center;
+        font-size: 28px;
+    }
 
-.footer-description {
-    color: #94a3b8;
-}
+    .register-subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 25px;
+    }
 
-.footer-features {
-    margin-top: 12px;
-    color: #94a3b8;
-    font-size: 12px;
-    line-height: 1.7;
-}
+    .form-group {
+        margin-bottom: 17px;
+    }
 
-.footer-divider {
-    width: 80px;
-    height: 1px;
-    background: #475569;
-    margin: 18px auto;
-}
+    .form-group label {
+        display: block;
+        margin-bottom: 7px;
+        font-weight: 600;
+    }
 
-.footer-credit {
-    color: #e2e8f0 !important;
-    font-size: 14px !important;
-}
+    .form-group input {
+        width: 100%;
+        padding: 13px 14px;
+        border: 1px solid #d5d5d5;
+        border-radius: 11px;
+        font-size: 15px;
+        outline: none;
+    }
 
-.footer-credit strong {
-    color: white;
-}
+    .form-group input:focus {
+        border-color: #2563eb;
+    }
 
-.footer-copy {
-    color: #64748b !important;
-    font-size: 11px !important;
-}
+    .primary-btn {
+        width: 100%;
+        border: none;
+        border-radius: 11px;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        background: #2563eb;
+        color: white;
+        margin-top: 5px;
+    }
+
+    .primary-btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+
+    .secondary-btn {
+        width: 100%;
+        border: 1px solid #2563eb;
+        border-radius: 11px;
+        padding: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        background: white;
+        color: #2563eb;
+        margin-top: 10px;
+    }
+
+    .otp-section {
+        display: none;
+    }
+
+    .otp-info {
+        background: #eef5ff;
+        border-radius: 12px;
+        padding: 13px;
+        margin-bottom: 20px;
+        text-align: center;
+        color: #245;
+        font-size: 14px;
+    }
+
+    .otp-input {
+        text-align: center;
+        letter-spacing: 8px;
+        font-size: 24px !important;
+        font-weight: 700;
+    }
+
+    .resend-btn {
+        display: block;
+        margin: 15px auto 0;
+        border: none;
+        background: none;
+        color: #2563eb;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .resend-btn:disabled {
+        color: #888;
+        cursor: not-allowed;
+    }
+
+    #message {
+        display: none;
+        margin-top: 15px;
+        padding: 12px;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    #message.success {
+        display: block;
+        background: #e9f9ee;
+        color: #18743a;
+    }
+
+    #message.error {
+        display: block;
+        background: #fff0f0;
+        color: #b42318;
+    }
+
+    .login-link {
+        text-align: center;
+        margin-top: 22px;
+        font-size: 14px;
+    }
+
+    .login-link a {
+        color: #2563eb;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .footer {
+        text-align: center;
+        padding: 18px 10px;
+        color: #666;
+        font-size: 13px;
+    }
+
+    .footer p {
+        margin: 4px 0;
+    }
+
+    @media (max-width: 600px) {
+        .register-page {
+            min-height: calc(100vh - 120px);
+            padding: 20px 12px;
+        }
+
+        .register-card {
+            padding: 23px 18px;
+            border-radius: 18px;
+        }
+
+        .register-card h1 {
+            font-size: 24px;
+        }
+
+        .otp-input {
+            letter-spacing: 5px;
+        }
+    }
 </style>
 
-</head>
+<div class="register-page">
 
-<body>
+    <div class="register-card">
 
-<div class="card">
+        <!-- REGISTRATION SECTION -->
+        <div id="registrationSection">
 
-    <h1>🛡️ Join DisasterShield</h1>
+            <h1>Create Citizen Account</h1>
 
-    <p class="subtitle">
-        Create your citizen account to report disasters and receive alerts.
-    </p>
+            <div class="register-subtitle">
+                Register with your verified email
+            </div>
 
-    <form id="registerForm">
+            <form id="registerForm">
 
-        <label for="name">Full Name</label>
-        <input
-            type="text"
-            id="name"
-            placeholder="Enter your name"
-            required
-        >
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="Enter your full name"
+                        required
+                    >
+                </div>
 
-        <label for="email">Email</label>
-        <input
-            type="email"
-            id="email"
-            placeholder="Enter your email"
-            required
-        >
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
 
-        <label for="password">Password</label>
-        <input
-            type="password"
-            id="password"
-            placeholder="Minimum 8 characters"
-            required
-        >
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Minimum 8 characters"
+                        minlength="8"
+                        required
+                    >
+                </div>
 
-        <button type="submit" id="registerBtn">
-            Create Citizen Account
-        </button>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        placeholder="Re-enter your password"
+                        minlength="8"
+                        required
+                    >
+                </div>
 
-    </form>
+                <button
+                    type="submit"
+                    class="primary-btn"
+                    id="registerBtn"
+                >
+                    Send OTP
+                </button>
 
-    <div id="message"></div>
+            </form>
 
-    <div class="login">
-        Already have an account?
-        <a href="/citizen/login">Login</a>
+        </div>
+
+
+        <!-- OTP SECTION -->
+        <div id="otpSection" class="otp-section">
+
+            <h1>Verify Email</h1>
+
+            <div class="register-subtitle">
+                Check your email for the verification code
+            </div>
+
+            <div class="otp-info">
+                A 6-digit OTP has been sent to
+                <strong id="otpEmail"></strong>
+                <br>
+                The OTP is valid for 10 minutes.
+            </div>
+
+            <form id="otpForm">
+
+                <div class="form-group">
+
+                    <label for="otp">
+                        Enter OTP
+                    </label>
+
+                    <input
+                        type="text"
+                        id="otp"
+                        class="otp-input"
+                        inputmode="numeric"
+                        maxlength="6"
+                        pattern="[0-9]{6}"
+                        placeholder="••••••"
+                        autocomplete="one-time-code"
+                        required
+                    >
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="primary-btn"
+                    id="verifyBtn"
+                >
+                    Verify OTP
+                </button>
+
+            </form>
+
+            <button
+                type="button"
+                class="resend-btn"
+                id="resendBtn"
+            >
+                Resend OTP
+            </button>
+
+            <button
+                type="button"
+                class="secondary-btn"
+                id="backBtn"
+            >
+                Back to Registration
+            </button>
+
+        </div>
+
+
+        <div id="message"></div>
+
+        <div class="login-link">
+            Already have an account?
+            <a href="/citizen/login">Login here</a>
+        </div>
+
     </div>
 
 </div>
 
+
+<footer class="footer">
+
+    <p>
+        Design &amp; Deployed by <strong>~Amit</strong>
+    </p>
+
+    <p>
+        © 2026 DisasterShield AI • SIH Project
+    </p>
+
+</footer>
+
+
 <script>
 
-document.getElementById("registerForm").addEventListener(
-    "submit",
-    async function(event) {
+let registeredEmail = "";
 
-        event.preventDefault();
 
-        const button =
-            document.getElementById("registerBtn");
+/* =========================
+   SHOW MESSAGE
+========================= */
 
-        const message =
-            document.getElementById("message");
+function showMessage(text, type) {
 
-        button.disabled = true;
-        message.className = "";
-        message.style.display = "none";
+    const message =
+        document.getElementById("message");
 
-        const name =
-            document.getElementById("name").value.trim();
+    message.textContent = text;
+    message.className = type;
+    message.style.display = "block";
+}
 
-        const email =
-            document.getElementById("email").value.trim();
 
-        const password =
-            document.getElementById("password").value;
+/* =========================
+   REGISTER / SEND OTP
+========================= */
 
-        try {
+document
+.getElementById("registerForm")
+.addEventListener("submit", async function(event) {
 
-            const response = await fetch(
-                "/api/auth/register",
-                {
-                    method: "POST",
+    event.preventDefault();
 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+    const button =
+        document.getElementById("registerBtn");
 
-                    body: JSON.stringify({
-                        name: name,
-                        email: email,
-                        password: password
-                    })
-                }
-            );
+    const name =
+        document.getElementById("name").value.trim();
 
-            const result =
-                await response.json();
+    const email =
+        document.getElementById("email").value.trim();
 
-            if (!result.success) {
-                throw new Error(
-                    result.message ||
-                    "Registration failed"
-                );
+    const password =
+        document.getElementById("password").value;
+
+    const confirmPassword =
+        document.getElementById("confirmPassword").value;
+
+
+    if (password !== confirmPassword) {
+
+        showMessage(
+            "Passwords do not match.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const strongPassword =
+        password.length >= 8 &&
+        /[A-Z]/.test(password) &&
+        /[a-z]/.test(password) &&
+        /[0-9]/.test(password) &&
+        /[^A-Za-z0-9]/.test(password);
+
+    if (!strongPassword) {
+
+        showMessage(
+            "Please enter a strong password. Use at least 8 characters with uppercase, lowercase, number and special character.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    button.disabled = true;
+    button.textContent = "Sending OTP...";
+
+
+    try {
+
+        const response = await fetch(
+            "/api/auth/register",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    password: password
+                })
             }
+        );
 
-            message.textContent =
-                "Registration successful. Redirecting to login...";
 
-            message.className = "success";
+        const result =
+            await response.json();
 
-            setTimeout(function() {
-                window.location.href =
-                    "/citizen/login";
-            }, 1200);
 
-        } catch (error) {
+        if (!response.ok || !result.success) {
 
-            message.textContent =
-                error.message;
+            throw new Error(
+                result.message ||
+                "Unable to send OTP"
+            );
+        }
 
-            message.className = "error";
+
+        registeredEmail =
+            result.email || email;
+
+
+        document.getElementById(
+            "otpEmail"
+        ).textContent = registeredEmail;
+
+
+        document.getElementById(
+            "registrationSection"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "otpSection"
+        ).style.display = "block";
+
+
+        document.getElementById(
+            "message"
+        ).style.display = "none";
+
+
+        document.getElementById("otp").focus();
+
+        startResendTimer();
+
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+
+        button.disabled = false;
+        button.textContent = "Send OTP";
+    }
+
+});
+
+
+/* =========================
+   VERIFY OTP
+========================= */
+
+document
+.getElementById("otpForm")
+.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+
+    const button =
+        document.getElementById("verifyBtn");
+
+    const otp =
+        document.getElementById("otp").value.trim();
+
+
+    if (!/^\d{6}$/.test(otp)) {
+
+        showMessage(
+            "Please enter a valid 6-digit OTP.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    button.disabled = true;
+    button.textContent = "Verifying...";
+
+
+    try {
+
+        const response = await fetch(
+            "/api/auth/verify-email",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    email: registeredEmail,
+                    otp: otp
+                })
+            }
+        );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok || !result.success) {
+
+            throw new Error(
+                result.message ||
+                "OTP verification failed"
+            );
+        }
+
+
+        showMessage(
+            "Email verified! Account created successfully. Redirecting to login...",
+            "success"
+        );
+
+
+        document.getElementById(
+            "otpForm"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "resendBtn"
+        ).style.display = "none";
+
+
+        document.getElementById(
+            "backBtn"
+        ).style.display = "none";
+
+
+        setTimeout(function() {
+
+            window.location.href =
+                "/citizen/login";
+
+        }, 1800);
+
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+
+        button.disabled = false;
+        button.textContent = "Verify OTP";
+    }
+
+});
+
+
+/* =========================
+   RESEND OTP
+========================= */
+
+document
+.getElementById("resendBtn")
+.addEventListener("click", async function() {
+
+    const button =
+        document.getElementById("resendBtn");
+
+    button.disabled = true;
+    button.textContent = "Sending...";
+
+
+    try {
+
+        const response = await fetch(
+            "/api/auth/resend-otp",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    email: registeredEmail
+                })
+            }
+        );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok || !result.success) {
+
+            throw new Error(
+                result.message ||
+                "Unable to resend OTP"
+            );
+        }
+
+
+        showMessage(
+            "A new OTP has been sent to your email.",
+            "success"
+        );
+
+
+        startResendTimer();
+
+
+    } catch (error) {
+
+        showMessage(
+            error.message,
+            "error"
+        );
+
+        button.disabled = false;
+        button.textContent = "Resend OTP";
+    }
+
+});
+
+
+/* =========================
+   RESEND TIMER
+========================= */
+
+let resendTimer;
+
+function startResendTimer() {
+
+    clearInterval(resendTimer);
+
+    const button =
+        document.getElementById("resendBtn");
+
+    let seconds = 30;
+
+    button.disabled = true;
+
+    button.textContent =
+        "Resend OTP (" + seconds + "s)";
+
+
+    resendTimer = setInterval(function() {
+
+        seconds--;
+
+        if (seconds <= 0) {
+
+            clearInterval(resendTimer);
 
             button.disabled = false;
+            button.textContent = "Resend OTP";
+
+            return;
         }
-    }
-);
+
+        button.textContent =
+            "Resend OTP (" + seconds + "s)";
+
+    }, 1000);
+}
+
+
+/* =========================
+   BACK BUTTON
+========================= */
+
+document
+.getElementById("backBtn")
+.addEventListener("click", function() {
+
+    clearInterval(resendTimer);
+
+    document.getElementById(
+        "otpSection"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "registrationSection"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "otp"
+    ).value = "";
+
+
+    document.getElementById(
+        "message"
+    ).style.display = "none";
+
+});
+
+
+/* =========================
+   OTP ONLY NUMBERS
+========================= */
+
+document
+.getElementById("otp")
+.addEventListener("input", function() {
+
+    this.value =
+        this.value
+        .replace(/\D/g, "")
+        .slice(0, 6);
+
+});
 
 </script>
 
 
-<footer class="site-footer">
-    <div class="footer-content">
 
-        <div class="footer-brand">
-            🛡️ <strong>DisasterShield AI</strong>
-        </div>
 
-        <p class="footer-description">
-            AI-Powered Disaster Management & Emergency Response Platform
-        </p>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    setupPasswordEye("password");
+    setupPasswordEye("confirmPassword");
+});
 
-        <div class="footer-features">
-            Real-time Alerts • GIS Risk Mapping • Citizen Reporting • Emergency Assistance
-        </div>
+function setupPasswordEye(id) {
+    const input = document.getElementById(id);
+    if (!input || input.dataset.eyeReady === "true") return;
 
-        <div class="footer-divider"></div>
+    const wrapper = document.createElement("span");
 
-        <p class="footer-credit">
-            Design &amp; Deployed by <strong>~Amit</strong>
-        </p>
+    wrapper.style.position = "relative";
+    wrapper.style.display = "block";
+    wrapper.style.width = "100%";
 
-        <p class="footer-copy">
-            © 2026 DisasterShield AI • SIH Project
-        </p>
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
 
-    </div>
-</footer>
+    input.style.width = "100%";
+    input.style.boxSizing = "border-box";
+    input.style.paddingRight = "48px";
 
-</body>
-</html>
+    const eye = document.createElement("button");
+
+    eye.type = "button";
+    eye.innerHTML = "👁️";
+    eye.setAttribute("aria-label", "Show password");
+
+    Object.assign(eye.style, {
+        position: "absolute",
+        right: "8px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        width: "34px",
+        height: "34px",
+        padding: "0",
+        margin: "0",
+        border: "0",
+        outline: "none",
+        background: "transparent",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "18px",
+        lineHeight: "1",
+        zIndex: "10"
+    });
+
+    eye.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (input.type === "password") {
+            input.type = "text";
+            eye.innerHTML = "🙈";
+            eye.setAttribute("aria-label", "Hide password");
+        } else {
+            input.type = "password";
+            eye.innerHTML = "👁️";
+            eye.setAttribute("aria-label", "Show password");
+        }
+    });
+
+    wrapper.appendChild(eye);
+    input.dataset.eyeReady = "true";
+}
+</script>

@@ -304,5 +304,78 @@ form.addEventListener("submit", async function(event) {
     <div>Designed for Smart & Safer Communities</div>
     <div>Design &amp; Deployed by ~Amit</div>
 </footer>
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    setupPasswordEye("password");
+});
+
+function setupPasswordEye(id) {
+    const input = document.getElementById(id);
+    if (!input || input.dataset.eyeReady === "true") return;
+
+    const wrapper = document.createElement("span");
+
+    wrapper.style.position = "relative";
+    wrapper.style.display = "block";
+    wrapper.style.width = "100%";
+
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+
+    input.style.width = "100%";
+    input.style.boxSizing = "border-box";
+    input.style.paddingRight = "48px";
+
+    const eye = document.createElement("button");
+
+    eye.type = "button";
+    eye.innerHTML = "👁️";
+    eye.setAttribute("aria-label", "Show password");
+
+    Object.assign(eye.style, {
+        position: "absolute",
+        right: "8px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        width: "34px",
+        height: "34px",
+        padding: "0",
+        margin: "0",
+        border: "0",
+        outline: "none",
+        background: "transparent",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "18px",
+        lineHeight: "1",
+        zIndex: "10"
+    });
+
+    eye.addEventListener("click", function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (input.type === "password") {
+            input.type = "text";
+            eye.innerHTML = "🙈";
+            eye.setAttribute("aria-label", "Hide password");
+        } else {
+            input.type = "password";
+            eye.innerHTML = "👁️";
+            eye.setAttribute("aria-label", "Show password");
+        }
+    });
+
+    wrapper.appendChild(eye);
+    input.dataset.eyeReady = "true";
+}
+</script>
+
 </body>
 </html>

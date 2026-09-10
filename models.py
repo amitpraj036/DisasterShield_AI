@@ -352,3 +352,47 @@ class DataSource(db.Model):
 
     def __repr__(self):
         return f"<DataSource {self.name}>"
+
+
+class EmailVerification(db.Model):
+    __tablename__ = "email_verifications"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+
+    name = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    email = db.Column(
+        db.String(150),
+        nullable=False,
+        index=True
+    )
+
+    password_hash = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    otp_hash = db.Column(
+        db.String(255),
+        nullable=False
+    )
+
+    expires_at = db.Column(
+        db.DateTime,
+        nullable=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        nullable=False
+    )
+
+    def __repr__(self):
+        return f"<EmailVerification {self.email}>"

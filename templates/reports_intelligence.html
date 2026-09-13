@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports Intelligence | DisasterShield AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+        }
+
+        .topbar {
+            background: #111827;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            background: #2563eb;
+            padding: 9px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 25px;
+        }
+
+        .header {
+            margin-bottom: 22px;
+        }
+
+        .header h1 {
+            font-size: 30px;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            color: #64748b;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.06);
+            border-left: 5px solid #2563eb;
+        }
+
+        .stat-card.pending {
+            border-left-color: #f59e0b;
+        }
+
+        .stat-card.verified {
+            border-left-color: #16a34a;
+        }
+
+        .stat-card.rejected {
+            border-left-color: #dc2626;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 700;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.06);
+            margin-bottom: 22px;
+        }
+
+        .panel h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #dbe2ea;
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+        }
+
+        button {
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .refresh {
+            background: #2563eb;
+            color: white;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th, td {
+            padding: 13px 12px;
+            border-bottom: 1px solid #edf0f4;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .high {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .low {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .pending-badge {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .verified-badge {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .rejected-badge {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .view-btn {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .verify-btn {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .reject-btn {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 35px;
+            color: #64748b;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .65);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-box {
+            width: min(700px, 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            background: white;
+            border-radius: 15px;
+            padding: 24px;
+        }
+
+        .modal-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .close {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .detail {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .detail.full {
+            grid-column: 1 / -1;
+        }
+
+        .detail strong {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        @media (max-width: 900px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filters {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .topbar {
+                padding: 14px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail.full {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="brand">🛡️ DisasterShield AI</div>
+    <a class="back-btn" href="/admin">← Command Center</a>
+</header>
+
+<main class="container">
+
+    <section class="header">
+        <h1>📊 Reports Intelligence</h1>
+        <p>Monitor, analyze and verify citizen disaster reports.</p>
+    </section>
+
+    <section class="stats">
+        <div class="stat-card">
+            <div class="stat-label">Total Reports</div>
+            <div class="stat-value" id="totalReports">0</div>
+        </div>
+
+        <div class="stat-card pending">
+            <div class="stat-label">Pending Verification</div>
+            <div class="stat-value" id="pendingReports">0</div>
+        </div>
+
+        <div class="stat-card verified">
+            <div class="stat-label">Verified Reports</div>
+            <div class="stat-value" id="verifiedReports">0</div>
+        </div>
+
+        <div class="stat-card rejected">
+            <div class="stat-label">Rejected Reports</div>
+            <div class="stat-value" id="rejectedReports">0</div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>🔎 Report Intelligence</h2>
+
+        <div id="message" class="message"></div>
+
+        <div class="filters">
+            <input
+                id="searchInput"
+                type="search"
+                placeholder="Search reports..."
+            >
+
+            <select id="statusFilter">
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="verified">Verified</option>
+                <option value="rejected">Rejected</option>
+            </select>
+
+            <select id="severityFilter">
+                <option value="all">All Severity</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+
+            <select id="typeFilter">
+                <option value="all">All Disaster Types</option>
+            </select>
+
+            <button class="refresh" onclick="loadReports()">↻ Refresh</button>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Disaster</th>
+                        <th>Severity</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Reported</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="reportsTable">
+                    <tr>
+                        <td colspan="7" class="empty">Loading reports...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<div class="modal" id="reportModal">
+    <div class="modal-box">
+
+        <div class="modal-head">
+            <h2>Report Details</h2>
+            <button class="close" onclick="closeModal()">✕</button>
+        </div>
+
+        <div id="reportDetails"></div>
+
+    </div>
+</div>
+
+<footer>
+    Design &amp; Deployed by ~Amit<br>
+    © 2026 DisasterShield AI • SIH Project
+</footer>
+
+<script>
+let allReports = [];
+
+function normalize(value) {
+    return String(value ?? "").toLowerCase();
+}
+
+function getReportStatus(report) {
+    return normalize(
+        report.status ||
+        report.verification_status ||
+        "pending"
+    );
+}
+
+function getSeverity(report) {
+    return normalize(
+        report.severity ||
+        report.risk_level ||
+        "medium"
+    );
+}
+
+function getType(report) {
+    return (
+        report.disaster_type ||
+        report.type ||
+        report.category ||
+        "Unknown"
+    );
+}
+
+function getLocation(report) {
+    if (report.location) return report.location;
+
+    if (
+        report.latitude !== undefined &&
+        report.longitude !== undefined
+    ) {
+        return `${report.latitude}, ${report.longitude}`;
+    }
+
+    return "Not available";
+}
+
+function updateStats() {
+    const total = allReports.length;
+
+    const pending = allReports.filter(
+        r => getReportStatus(r) === "pending"
+    ).length;
+
+    const verified = allReports.filter(
+        r => getReportStatus(r) === "verified"
+    ).length;
+
+    const rejected = allReports.filter(
+        r => getReportStatus(r) === "rejected"
+    ).length;
+
+    document.getElementById("totalReports").textContent = total;
+    document.getElementById("pendingReports").textContent = pending;
+    document.getElementById("verifiedReports").textContent = verified;
+    document.getElementById("rejectedReports").textContent = rejected;
+}
+
+function populateTypes() {
+    const select = document.getElementById("typeFilter");
+    const current = select.value;
+
+    const types = [...new Set(
+        allReports.map(r => getType(r))
+    )].sort();
+
+    select.innerHTML = '<option value="all">All Disaster Types</option>';
+
+    types.forEach(type => {
+        const option = document.createElement("option");
+        option.value = normalize(type);
+        option.textContent = type;
+        select.appendChild(option);
+    });
+
+    if ([...select.options].some(o => o.value === current)) {
+        select.value = current;
+    }
+}
+
+function applyFilters() {
+    const search = normalize(
+        document.getElementById("searchInput").value
+    );
+
+    const status = normalize(
+        document.getElementById("statusFilter").value
+    );
+
+    const severity = normalize(
+        document.getElementById("severityFilter").value
+    );
+
+    const type = normalize(
+        document.getElementById("typeFilter").value
+    );
+
+    const filtered = allReports.filter(report => {
+
+        const text = [
+            report.id,
+            getType(report),
+            report.description,
+            report.title,
+            getLocation(report),
+            getReportStatus(report),
+            getSeverity(report)
+        ].join(" ").toLowerCase();
+
+        const matchesSearch =
+            !search || text.includes(search);
+
+        const matchesStatus =
+            status === "all" ||
+            getReportStatus(report) === status;
+
+        const matchesSeverity =
+            severity === "all" ||
+            getSeverity(report) === severity;
+
+        const matchesType =
+            type === "all" ||
+            normalize(getType(report)) === type;
+
+        return (
+            matchesSearch &&
+            matchesStatus &&
+            matchesSeverity &&
+            matchesType
+        );
+    });
+
+    renderReports(filtered);
+}
+
+function renderReports(reports) {
+    const table = document.getElementById("reportsTable");
+
+    if (!reports.length) {
+        table.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty">
+                    No reports found.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    table.innerHTML = reports.map(report => {
+
+        const severity = getSeverity(report);
+        const status = getReportStatus(report);
+        const type = getType(report);
+
+        const severityClass =
+            ["critical", "high", "medium", "low"].includes(severity)
+                ? severity
+                : "medium";
+
+        let statusClass = "pending-badge";
+
+        if (status === "verified") {
+            statusClass = "verified-badge";
+        } else if (status === "rejected") {
+            statusClass = "rejected-badge";
+        }
+
+        const date =
+            report.created_at ||
+            report.reported_at ||
+            report.timestamp ||
+            "—";
+
+        return `
+            <tr>
+                <td>#${report.id ?? "—"}</td>
+
+                <td>
+                    <strong>${escapeHtml(type)}</strong>
+                </td>
+
+                <td>
+                    <span class="badge ${severityClass}">
+                        ${escapeHtml(severity.toUpperCase())}
+                    </span>
+                </td>
+
+                <td>${escapeHtml(getLocation(report))}</td>
+
+                <td>
+                    <span class="badge ${statusClass}">
+                        ${escapeHtml(status.toUpperCase())}
+                    </span>
+                </td>
+
+                <td>${escapeHtml(date)}</td>
+
+                <td>
+                    <div class="actions">
+                        <button
+                            class="view-btn"
+                            onclick="viewReport(${report.id})">
+                            View
+                        </button>
+
+                        ${
+                            status === "pending"
+                            ? `
+                            <button
+                                class="verify-btn"
+                                onclick="verifyReport(${report.id})">
+                                Verify
+                            </button>
+
+                            <button
+                                class="reject-btn"
+                                onclick="rejectReport(${report.id})">
+                                Reject
+                            </button>
+                            `
+                            : ""
+                        }
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function viewReport(id) {
+    const report = allReports.find(
+        r => Number(r.id) === Number(id)
+    );
+
+    if (!report) return;
+
+    const details = document.getElementById("reportDetails");
+
+    details.innerHTML = `
+        <div class="detail-grid">
+
+            <div class="detail">
+                <strong>Report ID</strong>
+                #${escapeHtml(report.id)}
+            </div>
+
+            <div class="detail">
+                <strong>Disaster Type</strong>
+                ${escapeHtml(getType(report))}
+            </div>
+
+            <div class="detail">
+                <strong>Severity</strong>
+                ${escapeHtml(getSeverity(report).toUpperCase())}
+            </div>
+
+            <div class="detail">
+                <strong>Status</strong>
+                ${escapeHtml(getReportStatus(report).toUpperCase())}
+            </div>
+
+            <div class="detail">
+                <strong>Latitude</strong>
+                ${escapeHtml(report.latitude ?? "—")}
+            </div>
+
+            <div class="detail">
+                <strong>Longitude</strong>
+                ${escapeHtml(report.longitude ?? "—")}
+            </div>
+
+            <div class="detail full">
+                <strong>Location</strong>
+                ${escapeHtml(getLocation(report))}
+            </div>
+
+            <div class="detail full">
+                <strong>Description</strong>
+                ${escapeHtml(
+                    report.description ||
+                    report.message ||
+                    report.details ||
+                    "No description available."
+                )}
+            </div>
+
+        </div>
+    `;
+
+    document.getElementById("reportModal")
+        .classList.add("show");
+}
+
+function closeModal() {
+    document.getElementById("reportModal")
+        .classList.remove("show");
+}
+
+async function loadReports() {
+    const message = document.getElementById("message");
+
+    message.textContent = "Loading reports...";
+
+    try {
+        const response = await fetch("/api/admin/reports");
+
+        if (response.status === 401) {
+            window.location.href = "/admin/login";
+            return;
+        }
+
+        if (response.status === 403) {
+            message.textContent =
+                "Admin access required.";
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                `HTTP ${response.status}`
+            );
+        }
+
+        const data = await response.json();
+
+        allReports =
+            Array.isArray(data)
+                ? data
+                : (
+                    data.reports ||
+                    data.data ||
+                    []
+                );
+
+        updateStats();
+        populateTypes();
+        applyFilters();
+
+        message.textContent =
+            `Loaded ${allReports.length} report(s).`;
+
+    } catch (error) {
+        console.error(error);
+
+        message.textContent =
+            "Unable to load reports.";
+    }
+}
+
+async function verifyReport(id) {
+    if (!confirm(
+        `Verify report #${id}?`
+    )) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/admin/reports/${id}/verify`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.message ||
+                "Verification failed."
+            );
+        }
+
+        await loadReports();
+
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function rejectReport(id) {
+    if (!confirm(
+        `Reject report #${id}?`
+    )) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/admin/reports/${id}/reject`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.message ||
+                "Rejection failed."
+            );
+        }
+
+        await loadReports();
+
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+document.getElementById("searchInput")
+    .addEventListener("input", applyFilters);
+
+document.getElementById("statusFilter")
+    .addEventListener("change", applyFilters);
+
+document.getElementById("severityFilter")
+    .addEventListener("change", applyFilters);
+
+document.getElementById("typeFilter")
+    .addEventListener("change", applyFilters);
+
+window.addEventListener("click", event => {
+    const modal =
+        document.getElementById("reportModal");
+
+    if (event.target === modal) {
+        closeModal();
+    }
+});
+
+loadReports();
+</script>
+
+</body>
+</html>

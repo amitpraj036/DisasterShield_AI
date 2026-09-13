@@ -6,6 +6,7 @@ from flask import Blueprint, jsonify, request
 from models import db, Alert, CitizenLocation, SafetyAlertEvent
 from services.auth_service import login_required, get_current_user
 from services.notification_service import send_safety_alert_email
+from services.push_service import send_push_to_user
 
 
 safety_bp = Blueprint("safety", __name__, url_prefix="/api/safety")
@@ -170,6 +171,29 @@ def update_location_and_check():
             except Exception as email_error:
                 # Keep the location check usable even if SMTP is temporarily unavailable.
                 print("SAFETY ALERT EMAIL ERROR:", email_error)
+
+            try:
+                push_count = send_push_to_user(
+                    user.id,
+                    f"🚨 {str(alert.severity).upper()} Safety Alert",
+                    f"{alert.title}: You are approximately {distance_km:.2f} km from the danger zone.",
+                    {
+                        "alert_id": alert.id,
+                        "severity": alert.severity,
+                        "latitude": alert.latitude,
+                        "longitude": alert.longitude,
+                    }
+                )
+
+                if push_count:
+                    print(
+                        f"SAFETY PUSH SENT: user={user.id}, "
+                        f"alert={alert.id}, subscriptions={push_count}"
+                    )
+
+            except Exception as push_error:
+                # Push failure must not break the safety/location check.
+                print("SAFETY ALERT PUSH ERROR:", push_error)
 
             db.session.commit()
         else:

@@ -182,31 +182,36 @@ def create_app():
         return render_template("admin_risk_intelligence.html")
 
 
-
-
     @app.route("/admin/reports-intelligence")
-    def reports_intelligence():
-        user_id = session.get("user_id")
+    def admin_reports_intelligence():
+        user, error = admin_page_required()
 
-        if not user_id:
-            return redirect("/admin/login")
+        if error:
+            return error
 
-        user = db.session.get(User, user_id)
-
-        if not user:
-            session.clear()
-            return redirect("/admin/login")
-
-        if user.role != "admin":
-            return {
-                "success": False,
-                "message": "Admin access required"
-            }, 403
-
-        return render_template("reports_intelligence.html")
+        return render_template("admin_reports_intelligence.html")
 
 
-    @app.route("/admin")
+    # Admin dashboard
+    
+@app.route("/admin/reports-intelligence")
+def reports_intelligence():
+    from flask import session, redirect, url_for, render_template
+    from models import User
+
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return redirect(url_for("admin_login"))
+
+    user = User.query.get(user_id)
+
+    if not user or user.role != "admin":
+        return redirect(url_for("admin_login"))
+
+    return render_template("reports_intelligence.html")
+
+@app.route("/admin")
     def admin_dashboard():
         user_id = session.get("user_id")
 

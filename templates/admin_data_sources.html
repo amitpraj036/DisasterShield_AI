@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Data Sources | DisasterShield AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            color: #172033;
+        }
+
+        .topbar {
+            background: #101827;
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand {
+            font-weight: 700;
+        }
+
+        .brand small {
+            display: block;
+            font-size: 11px;
+            opacity: .7;
+            margin-top: 3px;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        button,
+        .btn {
+            border: 0;
+            border-radius: 7px;
+            padding: 9px 13px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .btn-blue {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-dark {
+            background: #273449;
+            color: white;
+        }
+
+        .btn-red {
+            background: #dc2626;
+            color: white;
+        }
+
+        .container {
+            max-width: 1150px;
+            margin: auto;
+            padding: 22px 16px 40px;
+        }
+
+        .header {
+            margin-bottom: 18px;
+        }
+
+        .header h1 {
+            margin: 0 0 5px;
+            font-size: 25px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .stat {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .stat-value {
+            font-size: 27px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+        }
+
+        .panel h2 {
+            margin: 0 0 5px;
+            font-size: 18px;
+        }
+
+        .panel-subtitle {
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .source-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .source-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .source-name {
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .source-type {
+            display: inline-block;
+            background: #e8f0ff;
+            color: #2563eb;
+            border-radius: 20px;
+            padding: 4px 8px;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .source-description {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .source-meta {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #edf1f5;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d5dce5;
+            border-radius: 7px;
+            outline: none;
+            background: white;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #2563eb;
+        }
+
+        .message {
+            margin-top: 12px;
+            font-size: 13px;
+        }
+
+        .success {
+            color: #15803d;
+        }
+
+        .error {
+            color: #dc2626;
+        }
+
+        .back {
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 700px) {
+            .stats,
+            .source-grid,
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                align-items: flex-start;
+            }
+
+            .top-actions {
+                flex-wrap: wrap;
+                justify-content: flex-end;
+            }
+
+            .header h1 {
+                font-size: 21px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        🛡 DisasterShield AI
+        <small>Admin Data Intelligence</small>
+    </div>
+
+    <div class="top-actions">
+        <a class="btn btn-dark" href="/admin">← Command Center</a>
+        <button class="btn btn-red" onclick="logoutAdmin()">Logout</button>
+    </div>
+</header>
+
+<main class="container">
+
+    <div class="header">
+        <h1>🗂 Data Sources Manager</h1>
+        <p>Monitor configured intelligence sources and ingest risk observations.</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-label">Active Sources</div>
+            <div class="stat-value" id="sourceCount">—</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Risk Observations</div>
+            <div class="stat-value" id="riskCount">—</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">System Status</div>
+            <div class="stat-value" id="systemStatus">Online</div>
+        </div>
+    </div>
+
+    <section class="panel">
+        <h2>Configured Sources</h2>
+        <div class="panel-subtitle">
+            Active data sources currently available to the disaster intelligence system.
+        </div>
+
+        <div id="sources" class="source-grid">
+            Loading sources...
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>📥 Ingest Risk Observation</h2>
+        <div class="panel-subtitle">
+            Add a new observation without overwriting historical data.
+        </div>
+
+        <form id="ingestForm">
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Latitude *</label>
+                    <input id="latitude" type="number" step="any" required>
+                </div>
+
+                <div class="field">
+                    <label>Longitude *</label>
+                    <input id="longitude" type="number" step="any" required>
+                </div>
+
+                <div class="field">
+                    <label>Source Type *</label>
+                    <select id="sourceType" required>
+                        <option value="rainfall">Rainfall</option>
+                        <option value="soil_moisture">Soil Moisture</option>
+                        <option value="terrain">Terrain</option>
+                        <option value="satellite">Satellite</option>
+                        <option value="historical">Historical</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Rainfall (mm)</label>
+                    <input id="rainfall" type="number" step="any">
+                </div>
+
+                <div class="field">
+                    <label>Soil Moisture</label>
+                    <input id="soilMoisture" type="number" step="any">
+                </div>
+
+                <div class="field">
+                    <label>Slope (degree)</label>
+                    <input id="slope" type="number" step="any">
+                </div>
+
+                <div class="field">
+                    <label>Elevation</label>
+                    <input id="elevation" type="number" step="any">
+                </div>
+
+                <div class="field">
+                    <label>Historical Landslides</label>
+                    <input id="historical" type="number" min="0" step="1" value="0">
+                </div>
+
+            </div>
+
+            <br>
+
+            <button class="btn btn-blue" type="submit">
+                + Store Observation
+            </button>
+
+            <div id="message" class="message"></div>
+
+        </form>
+    </section>
+
+</main>
+
+<script>
+async function loadSources() {
+    try {
+        const response = await fetch("/api/data/sources", {
+            credentials: "same-origin"
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+            throw new Error(result.message || "Unable to load sources");
+        }
+
+        document.getElementById("sourceCount").textContent =
+            result.count ?? result.sources.length;
+
+        const container = document.getElementById("sources");
+
+        if (!result.sources.length) {
+            container.innerHTML = "No active data sources configured.";
+            return;
+        }
+
+        container.innerHTML = result.sources.map(source => `
+            <div class="source-card">
+                <div class="source-name">
+                    ${escapeHtml(source.name)}
+                </div>
+
+                <span class="source-type">
+                    ${escapeHtml(source.source_type)}
+                </span>
+
+                <div class="source-description">
+                    ${escapeHtml(
+                        source.description || "No description available."
+                    )}
+                </div>
+
+                <div class="source-meta">
+                    Status: ${source.is_active ? "Active" : "Inactive"}<br>
+                    Last Sync:
+                    ${source.last_sync_at
+                        ? new Date(source.last_sync_at).toLocaleString()
+                        : "Never"}
+                </div>
+            </div>
+        `).join("");
+
+    } catch (error) {
+        document.getElementById("sources").innerHTML =
+            `<span class="error">${escapeHtml(error.message)}</span>`;
+    }
+}
+
+async function loadRiskCount() {
+    try {
+        const response = await fetch("/api/risk", {
+            credentials: "same-origin"
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            document.getElementById("riskCount").textContent =
+                result.count ?? (result.data || []).length;
+        }
+    } catch (error) {
+        document.getElementById("riskCount").textContent = "—";
+    }
+}
+
+document.getElementById("ingestForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const message = document.getElementById("message");
+
+    const payload = {
+        latitude: document.getElementById("latitude").value,
+        longitude: document.getElementById("longitude").value,
+        source_type: document.getElementById("sourceType").value,
+        rainfall_mm: document.getElementById("rainfall").value || null,
+        soil_moisture: document.getElementById("soilMoisture").value || null,
+        slope_degree: document.getElementById("slope").value || null,
+        elevation: document.getElementById("elevation").value || null,
+        historical_landslides:
+            document.getElementById("historical").value || 0
+    };
+
+    try {
+        const response = await fetch("/api/data/ingest", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || "Data ingestion failed");
+        }
+
+        message.className = "message success";
+        message.textContent =
+            "Observation stored successfully. ID: " + result.data.id;
+
+        document.getElementById("ingestForm").reset();
+        document.getElementById("historical").value = "0";
+
+        await loadRiskCount();
+
+    } catch (error) {
+        message.className = "message error";
+        message.textContent = error.message;
+    }
+});
+
+async function logoutAdmin() {
+    try {
+        await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "same-origin"
+        });
+    } finally {
+        window.location.href = "/admin/login";
+    }
+}
+
+function escapeHtml(value) {
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+loadSources();
+loadRiskCount();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Risk Intelligence | DisasterShield AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fa;
+            color: #172033;
+        }
+
+        .topbar {
+            background: #101827;
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand {
+            font-weight: 700;
+        }
+
+        .brand small {
+            display: block;
+            font-size: 11px;
+            opacity: .7;
+            margin-top: 3px;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button,
+        .btn {
+            border: 0;
+            border-radius: 7px;
+            padding: 9px 13px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .btn-blue {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-dark {
+            background: #273449;
+            color: white;
+        }
+
+        .btn-red {
+            background: #dc2626;
+            color: white;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: auto;
+            padding: 22px 16px 40px;
+        }
+
+        .header {
+            margin-bottom: 18px;
+        }
+
+        .header h1 {
+            margin: 0 0 5px;
+            font-size: 25px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .stat {
+            background: white;
+            border-radius: 12px;
+            padding: 17px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.06);
+        }
+
+        .panel h2 {
+            margin: 0 0 5px;
+            font-size: 18px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d5dce5;
+            border-radius: 7px;
+            background: white;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #2563eb;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 9px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 950px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 11px;
+            text-align: left;
+            padding: 11px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 11px;
+            border-top: 1px solid #edf1f5;
+            font-size: 12px;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #fafcff;
+        }
+
+        .risk {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .risk.critical {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .risk.high {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .risk.moderate {
+            background: #fef3c7;
+            color: #a16207;
+        }
+
+        .risk.low {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .score {
+            font-weight: 700;
+        }
+
+        .location {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        .message {
+            margin-top: 12px;
+            font-size: 13px;
+        }
+
+        .success {
+            color: #15803d;
+        }
+
+        .error {
+            color: #dc2626;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 25px;
+            color: #64748b;
+        }
+
+        @media (max-width: 850px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filters,
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 21px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 9px;
+            }
+
+            .stat {
+                padding: 13px;
+            }
+
+            .stat-value {
+                font-size: 22px;
+            }
+
+            .topbar {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="brand">
+        🛡 DisasterShield AI
+        <small>Admin Risk Intelligence</small>
+    </div>
+
+    <div class="top-actions">
+        <a class="btn btn-dark" href="/admin">← Command Center</a>
+        <button class="btn btn-red" onclick="logoutAdmin()">Logout</button>
+    </div>
+</header>
+
+<main class="container">
+
+    <div class="header">
+        <h1>⚠️ Risk Intelligence</h1>
+        <p>
+            Monitor explainable risk observations and generate new risk assessments.
+        </p>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-label">Total Observations</div>
+            <div class="stat-value" id="totalRisk">—</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Critical</div>
+            <div class="stat-value" id="criticalRisk">—</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">High</div>
+            <div class="stat-value" id="highRisk">—</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Moderate / Low</div>
+            <div class="stat-value" id="otherRisk">—</div>
+        </div>
+    </div>
+
+    <section class="panel">
+
+        <h2>Risk Observations</h2>
+
+        <div class="subtitle">
+            Historical observations are retained. New observations create new records.
+        </div>
+
+        <div class="filters">
+
+            <input
+                id="search"
+                type="search"
+                placeholder="Search location, source, score..."
+            >
+
+            <select id="levelFilter">
+                <option value="all">All Risk Levels</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="moderate">Moderate</option>
+                <option value="low">Low</option>
+            </select>
+
+            <select id="sourceFilter">
+                <option value="all">All Sources</option>
+                <option value="manual">Manual</option>
+                <option value="rainfall">Rainfall</option>
+                <option value="soil_moisture">Soil Moisture</option>
+                <option value="terrain">Terrain</option>
+                <option value="satellite">Satellite</option>
+                <option value="historical">Historical</option>
+            </select>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Risk</th>
+                        <th>Score</th>
+                        <th>Location</th>
+                        <th>Rainfall</th>
+                        <th>Moisture</th>
+                        <th>Slope</th>
+                        <th>Elevation</th>
+                        <th>Historical</th>
+                        <th>Source</th>
+                        <th>Recorded</th>
+                    </tr>
+                </thead>
+
+                <tbody id="riskTable">
+                    <tr>
+                        <td colspan="11" class="empty">
+                            Loading risk observations...
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <section class="panel">
+
+        <h2>➕ Create Risk Observation</h2>
+
+        <div class="subtitle">
+            The backend calculates the baseline risk score automatically.
+        </div>
+
+        <form id="riskForm">
+
+            <div class="form-grid">
+
+                <div class="field">
+                    <label>Latitude *</label>
+                    <input id="latitude" type="number" step="any" required>
+                </div>
+
+                <div class="field">
+                    <label>Longitude *</label>
+                    <input id="longitude" type="number" step="any" required>
+                </div>
+
+                <div class="field">
+                    <label>Source</label>
+                    <input id="source" value="manual">
+                </div>
+
+                <div class="field">
+                    <label>Rainfall (mm)</label>
+                    <input id="rainfall" type="number" step="any">
+                </div>
+
+                <div class="field">
+                    <label>Soil Moisture</label>
+                    <input id="soilMoisture" type="number" step="any">
+                </div>
+
+                <div class="field">
+                    <label>Slope (degree)</label>
+                    <input id="slope" type="number" step="any">
+                </div>
+
+                <div class="field">
+                    <label>Elevation</label>
+                    <input id="elevation" type="number" step="any">
+                </div>
+
+                <div class="field">
+                    <label>Historical Landslides</label>
+                    <input id="historical" type="number" min="0" step="1" value="0">
+                </div>
+
+            </div>
+
+            <br>
+
+            <button class="btn btn-blue" type="submit">
+                Calculate & Store Risk
+            </button>
+
+            <div id="message" class="message"></div>
+
+        </form>
+
+    </section>
+
+</main>
+
+<script>
+let allRisk = [];
+
+async function loadRisk() {
+
+    try {
+
+        const response = await fetch("/api/risk", {
+            credentials: "same-origin"
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+            throw new Error(
+                result.message || "Unable to load risk data"
+            );
+        }
+
+        allRisk = result.data || [];
+
+        updateStats();
+        applyFilters();
+
+    } catch (error) {
+
+        document.getElementById("riskTable").innerHTML = `
+            <tr>
+                <td colspan="11" class="empty">
+                    ${escapeHtml(error.message)}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function updateStats() {
+
+    const critical = allRisk.filter(
+        item => item.risk_level === "critical"
+    ).length;
+
+    const high = allRisk.filter(
+        item => item.risk_level === "high"
+    ).length;
+
+    document.getElementById("totalRisk").textContent =
+        allRisk.length;
+
+    document.getElementById("criticalRisk").textContent =
+        critical;
+
+    document.getElementById("highRisk").textContent =
+        high;
+
+    document.getElementById("otherRisk").textContent =
+        allRisk.length - critical - high;
+}
+
+function applyFilters() {
+
+    const search =
+        document.getElementById("search")
+            .value
+            .trim()
+            .toLowerCase();
+
+    const level =
+        document.getElementById("levelFilter").value;
+
+    const source =
+        document.getElementById("sourceFilter").value;
+
+    const filtered = allRisk.filter(item => {
+
+        const text = [
+            item.id,
+            item.latitude,
+            item.longitude,
+            item.risk_score,
+            item.risk_level,
+            item.source,
+            item.rainfall_mm,
+            item.soil_moisture,
+            item.slope_degree,
+            item.elevation
+        ]
+        .join(" ")
+        .toLowerCase();
+
+        return (
+            (!search || text.includes(search)) &&
+            (level === "all" || item.risk_level === level) &&
+            (source === "all" || item.source === source)
+        );
+    });
+
+    renderRisk(filtered);
+}
+
+function renderRisk(records) {
+
+    const table = document.getElementById("riskTable");
+
+    if (!records.length) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="11" class="empty">
+                    No risk observations match your filters.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    table.innerHTML = records.map(item => {
+
+        const lat = Number(item.latitude);
+        const lon = Number(item.longitude);
+
+        const location =
+            Number.isFinite(lat) && Number.isFinite(lon)
+                ? `<a
+                    class="location"
+                    href="https://www.google.com/maps?q=${lat},${lon}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    ${lat.toFixed(4)}, ${lon.toFixed(4)}
+                   </a>`
+                : "N/A";
+
+        const level =
+            String(item.risk_level || "unknown").toLowerCase();
+
+        const score =
+            item.risk_score === null ||
+            item.risk_score === undefined
+                ? "—"
+                : Number(item.risk_score).toFixed(2);
+
+        const recorded =
+            item.recorded_at
+                ? new Date(item.recorded_at).toLocaleString()
+                : "N/A";
+
+        return `
+            <tr>
+
+                <td>#${escapeHtml(item.id)}</td>
+
+                <td>
+                    <span class="risk ${escapeHtml(level)}">
+                        ${escapeHtml(level)}
+                    </span>
+                </td>
+
+                <td class="score">
+                    ${escapeHtml(score)}
+                </td>
+
+                <td>${location}</td>
+
+                <td>${formatValue(item.rainfall_mm)}</td>
+
+                <td>${formatValue(item.soil_moisture)}</td>
+
+                <td>${formatValue(item.slope_degree)}</td>
+
+                <td>${formatValue(item.elevation)}</td>
+
+                <td>${formatValue(item.historical_landslides)}</td>
+
+                <td>${escapeHtml(item.source || "N/A")}</td>
+
+                <td>${escapeHtml(recorded)}</td>
+
+            </tr>
+        `;
+
+    }).join("");
+}
+
+function formatValue(value) {
+
+    if (value === null || value === undefined || value === "") {
+        return "—";
+    }
+
+    if (typeof value === "number") {
+        return Number.isInteger(value)
+            ? String(value)
+            : value.toFixed(2);
+    }
+
+    return escapeHtml(value);
+}
+
+document.getElementById("search").addEventListener(
+    "input",
+    applyFilters
+);
+
+document.getElementById("levelFilter").addEventListener(
+    "change",
+    applyFilters
+);
+
+document.getElementById("sourceFilter").addEventListener(
+    "change",
+    applyFilters
+);
+
+document.getElementById("riskForm").addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        const message =
+            document.getElementById("message");
+
+        const payload = {
+            latitude:
+                document.getElementById("latitude").value,
+
+            longitude:
+                document.getElementById("longitude").value,
+
+            rainfall_mm:
+                document.getElementById("rainfall").value || null,
+
+            soil_moisture:
+                document.getElementById("soilMoisture").value || null,
+
+            slope_degree:
+                document.getElementById("slope").value || null,
+
+            elevation:
+                document.getElementById("elevation").value || null,
+
+            historical_landslides:
+                document.getElementById("historical").value || 0,
+
+            source:
+                document.getElementById("source").value.trim() || "manual"
+        };
+
+        try {
+
+            const response = await fetch("/api/risk", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (response.status === 401) {
+                window.location.href = "/admin/login";
+                return;
+            }
+
+            if (response.status === 403) {
+                throw new Error(
+                    "Admin access required."
+                );
+            }
+
+            if (!response.ok || !result.success) {
+                throw new Error(
+                    result.message || "Risk creation failed"
+                );
+            }
+
+            message.className = "message success";
+            message.textContent =
+                "Risk observation stored successfully. ID: " +
+                result.data.id +
+                " | Score: " +
+                result.data.risk_score +
+                " | Level: " +
+                result.data.risk_level;
+
+            document.getElementById("riskForm").reset();
+            document.getElementById("source").value = "manual";
+            document.getElementById("historical").value = "0";
+
+            await loadRisk();
+
+        } catch (error) {
+
+            message.className = "message error";
+            message.textContent = error.message;
+        }
+    }
+);
+
+async function logoutAdmin() {
+
+    try {
+
+        await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "same-origin"
+        });
+
+    } finally {
+
+        window.location.href = "/admin/login";
+    }
+}
+
+function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+loadRisk();
+</script>
+
+</body>
+</html>

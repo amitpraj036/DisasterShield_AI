@@ -1234,10 +1234,6 @@ async function enableSafetyAlerts() {
 
         safetyEnabled = true;
 
-        // Register Web Push notifications.
-        // Safety monitoring continues even if push setup fails.
-        await setupWebPushNotifications();
-
         const firstResponse = await fetch("/api/safety/location", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

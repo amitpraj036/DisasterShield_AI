@@ -186,46 +186,41 @@ def create_app():
 
     @app.route("/admin/reports-intelligence")
     def reports_intelligence():
-        user_id = session.get("user_id")
+            from flask import session, redirect, url_for, render_template
+            from models import User
 
-        if not user_id:
-            return redirect("/admin/login")
+            user_id = session.get("user_id")
 
-        user = db.session.get(User, user_id)
+            if not user_id:
+                return redirect(url_for("admin_login"))
 
-        if not user:
-            session.clear()
-            return redirect("/admin/login")
+            user = User.query.get(user_id)
 
-        if user.role != "admin":
-            return {
-                "success": False,
-                "message": "Admin access required"
-            }, 403
+            if not user or user.role != "admin":
+                return redirect(url_for("admin_login"))
 
-        return render_template("reports_intelligence.html")
-
+            return render_template("reports_intelligence.html")
 
     @app.route("/admin")
     def admin_dashboard():
-        user_id = session.get("user_id")
+            user_id = session.get("user_id")
 
-        if not user_id:
-            return redirect("/admin/login")
+            if not user_id:
+                return redirect("/admin/login")
 
-        user = db.session.get(User, user_id)
+            user = db.session.get(User, user_id)
 
-        if not user:
-            session.clear()
-            return redirect("/admin/login")
+            if not user:
+                session.clear()
+                return redirect("/admin/login")
 
-        if user.role != "admin":
-            return {
-                "success": False,
-                "message": "Admin access required"
-            }, 403
+            if user.role != "admin":
+                return {
+                    "success": False,
+                    "message": "Admin access required"
+                }, 403
 
-        return render_template("admin.html")
+            return render_template("admin.html")
 
     return app
 

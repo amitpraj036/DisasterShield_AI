@@ -10,3 +10,7 @@ routes.before_emergency/
 templates.before_emergency/
 *.backup
 *_backup.html
+
+# Web Push VAPID private key
+.vapid_private.pem
+.vapid_public.pem
